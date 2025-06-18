@@ -1,4 +1,4 @@
-# binding-ddG
+# StaB-ddG
 
 # Setup 
 ```
@@ -23,9 +23,36 @@ The mutation csv file should contain two columns, `#Pdb` and `Mutation(s)_cleane
 
 The `Mutation(s)_cleaned` contains the mutations of interest. Each entry can have multiple mutations separated by commas. For example, `YH103H,QC7R` denotes a double mutant. The first character of a mutation string denotes the wild type amino acid, the second character the chain, followed by the position in the chain, and lastly the amino acid to mutate to. For example, `YH103H` denotes a mutation from Y to H at position 103 of chain H.
 ## Example
+An example is provided for TCR mimics in `example/tcrm_case_study`. Predictions can be generated using the following command:
+
 ```
 python run_stabddg.py --run_name test --csv_path example/tcrm_case_study/tcrm_case_study_spr.csv --pdb_dir example/tcrm_case_study/spr_pdbs/ --pdb_cache_path cache/tcrm_case_study_spr --fix_perm --fix_noise --batch_size 10000 --checkpoint "model_ckpts/stabddg.pt" 
 ```
+
+# Repository overview
+
+* `run_stabddg.py` using StaB-ddG for binding ddG prediction
+* `megascale_finetune.py` fine-tuning ProteinMPNN on folding stability data
+* `skempi_finetune.py` fine-tuning StaB-ddG on binding data from SKEMPI
+* `skempi_eval.py` evaluating StaB-ddG on SKEMPI test split
+* `protddg/`
+    * `model.py` StaB-ddG model
+    * `ppi_dataset.py` dataset classes for binding data
+    * `mpnn_utils.py` code copied over from [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
+* `model_ckpts` we provide the following checkpoints
+    * `v_48_020.pt` soluble ProteinMPNN weights from https://github.com/dauparas/ProteinMPNN
+    * `megascale_finetuned.pt` model weights after megascale fine-tuning
+    * `stabddg.pt` final model fine-tuned on both stability and binding data. This is the checkpoint that should be used for inference.
+* `data/`
+    * `rocklin/mega_splits.pkl` megascale dataset splits from https://github.com/Kuhlman-Lab/ThermoMPNN
+    * `SKEMPI/`
+        * `skempi_v2.csv` unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index
+        * `filtered_skempi.csv` filtered SKEMPI csv file
+        * `train_pdb.pkl, train_clusters.pkl` training split
+        * `test_pdb.pkl, test_clusters.pkl` test split
+        * `quality_filtering.ipynb` filtering script
+        * `skempi_splits.ipynb` script creating train/test cluster-based splits
+
 # Model training
 
 ## Fine-tuning on Megascale
