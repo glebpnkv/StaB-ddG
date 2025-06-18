@@ -6,14 +6,14 @@ import numpy as np
 
 from tqdm import tqdm
 from torch.utils.data import Dataset
-from protddg.mpnn_utils import parse_PDB
+from .mpnn_utils import parse_PDB
 
 class CombinedDataset(Dataset):
     def __init__(self, dataset1, dataset2):
-
         self.dataset1 = dataset1
         self.dataset2 = dataset2
         print(f'Combined datasets of sizes {len(dataset1)} and {len(dataset2)} to get a dataset of size {len(dataset1) + len(dataset2)}/')
+        
     def __len__(self):
         return len(self.dataset1) + len(self.dataset2)
 
@@ -194,7 +194,7 @@ class PPIDataset(Dataset):
 
 class SKEMPIDataset(PPIDataset):
     def __init__(self, 
-            csv_path='SKEMPI/filtered_skempi.csv',
+            csv_path='data/SKEMPI/filtered_skempi.csv',
             split_path='',
             pdb_dir='/home/exx/arthur/data/SKEMPI_v2/PDBs',
             pdb_dict_cache_path='cache/skempi_full_mask_pdb_dict.pkl', 
@@ -212,7 +212,7 @@ class SKEMPIDataset(PPIDataset):
 
     def preprocess_df(
             self,
-            csv_path='SKEMPI/filtered_skempi.csv'
+            csv_path='data/SKEMPI/filtered_skempi.csv'
         ) -> pd.DataFrame:
 
         df = pd.read_csv(csv_path)
@@ -231,7 +231,7 @@ class SKEMPIDataset(PPIDataset):
 class YeastDataset(PPIDataset):
 
     def __init__(self, 
-            csv_path='SKEMPI/filtered_skempi.csv',
+            csv_path='data/SKEMPI/filtered_skempi.csv',
             split_path='',
             pdb_dir='/home/exx/arthur/data/SKEMPI_v2/PDBs',
             pdb_dict_cache_path='cache/yeast_pdb_dict.pkl', 

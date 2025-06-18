@@ -1,16 +1,6 @@
 import torch
 from torch import nn
 from .mpnn_utils import featurize
-from dataclasses import dataclass
-
-# TODO: switch model config to include this.
-@dataclass
-class ProtddGConfig:
-    pmpnn: nn.Module
-    fix_perm: bool = False
-    fix_noise: bool = False
-    decode_mut_last: bool = False
-    device: str = 'cuda'
 
 class ProtddG(nn.Module):
     def __init__(self, pmpnn, scale_binder=False, fix_perm=False, fix_noise=False, device='cuda'):

@@ -7,7 +7,7 @@ from scipy.stats import spearmanr, pearsonr
 from tqdm import tqdm
 from protddg.mpnn_utils import ProteinMPNN
 from protddg.model import ProtddG
-from ppi_dataset import SKEMPIDataset, YeastDataset
+from protddg.ppi_dataset import SKEMPIDataset, YeastDataset
 
 def eval(model, dataset, ensemble=20, batch_size=10000):
     val_spearman=[]

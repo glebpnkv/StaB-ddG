@@ -8,7 +8,7 @@ import wandb
 from scipy.stats import spearmanr, pearsonr
 from tqdm import tqdm
 from protddg.mpnn_utils import ProteinMPNN
-from ppi_dataset import SKEMPIDataset, YeastDataset, CombinedDataset
+from protddg.ppi_dataset import SKEMPIDataset, YeastDataset, CombinedDataset
 from protddg.model import ProtddG
 
 def val_epoch(model, val_dataset, loss_fn, trials=3, 
@@ -183,11 +183,11 @@ if __name__ == "__main__":
     argparser.add_argument("--model_save_dir", type=str, default="cache/skempi_finetuned")
     argparser.add_argument("--scale_binder", action='store_true')
     argparser.add_argument("--fix_monomer", action='store_true')
-    argparser.add_argument("--skempi_path", type=str, default="SKEMPI/filtered_skempi.csv")
+    argparser.add_argument("--skempi_path", type=str, default="data/SKEMPI/filtered_skempi.csv")
     argparser.add_argument("--skempi_pdb_dir", type=str, default="/home/exx/arthur/data/SKEMPI_v2/PDBs")
     argparser.add_argument("--skempi_pdb_cache_path", type=str, default="cache/skempi_full_mask_pdb_dict.pkl")
     argparser.add_argument("--af_apo_structures", action='store_true') 
-    argparser.add_argument("--train_split_path", type=str, default="SKEMPI/train_clusters.pkl")
+    argparser.add_argument("--train_split_path", type=str, default="data/SKEMPI/train_clusters.pkl")
     argparser.add_argument("--second_train_split_path", type=str, default="")
     argparser.add_argument("--yeast_path", type=str, default="")
     argparser.add_argument("--yeast_pdb_dir", type=str, default="")
