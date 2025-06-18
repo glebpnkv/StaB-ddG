@@ -124,7 +124,7 @@ if __name__ == "__main__":
     argparser.add_argument("--checkpoint", type=str, default="model_ckpts/v_48_020.pt")
     argparser.add_argument("--seed", type=int, default=0)
     argparser.add_argument("--num_epochs", type=int, default=200)
-    argparser.add_argument("--batch_size", type=int, default=30000)
+    argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--model_save_freq", type=int, default=10)
     argparser.add_argument("--model_save_dir", type=str, default="cache/megascale_finetuned")
     argparser.add_argument("--wandb", action='store_true')
@@ -136,9 +136,9 @@ if __name__ == "__main__":
     argparser.add_argument("--fix_perm", action='store_true') # Fix permutation order between mutant and wildtype during decoding.
     argparser.add_argument("--fix_noise", action='store_true') # Fix the backbone noise added between mutant and wildtype.
     argparser.add_argument("--lam", type=float, default=0.0) # KL regularization strength.
-    argparser.add_argument("--pdb_dir", type=str, default="/home/exx/arthur/data/rocklin/AlphaFold_model_PDBs")
-    argparser.add_argument("--rocklin_csv", type=str, default='/home/exx/arthur/data/rocklin/Processed_K50_dG_datasets/Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
-    argparser.add_argument("--lr", type=float, default=0.0)
+    argparser.add_argument("--pdb_dir", type=str, default="AlphaFold_model_PDBs")
+    argparser.add_argument("--rocklin_csv", type=str, default='Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
+    argparser.add_argument("--lr", type=float, default=1e-6)
     argparser.add_argument("--random_init", action='store_true')
     args = argparser.parse_args()
 

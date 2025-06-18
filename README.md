@@ -56,17 +56,20 @@ python run_stabddg.py --run_name test --csv_path example/tcrm_case_study/tcrm_ca
 # Model training
 
 ## Fine-tuning on Megascale
+The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
 
 ```
-python megascale_finetune.py --run_name RUN_NAME --seed 0 --lr 1e-6 --fix_noise --dropout 0.0 --fix_perm --num_epochs 70 --wandb --val_freq 30 --batch_size 10000 --noise_level 0.2 --checkpoint model_ckpts/v_48_020.pt
+python megascale_finetune.py --run_name RUN_NAME --rocklin_csv DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv --pdb_dir DIR/AlphaFold_model_PDBs --fix_noise --fix_perm --num_epochs 70 --wandb --checkpoint model_ckpts/v_48_020.pt
 ```
 
 ## Fine-tuning on SKEMPI
+A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split and renamed to match the required input format described above. 
 ```
-python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl --epochs 200 --wandb --lr 1e-6 --run_name RUN_NAME --seed 1 --val_ensembles 20 --fix_noise --val_trials 1 --batch_size 15000 --single_batch_train --fix_perm --checkpoint model_ckpts/soluble_train_s0_epoch69.pt
+python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl --epochs 200 --wandb --lr 1e-6 --run_name RUN_NAME --fix_noise --single_batch_train --fix_perm --checkpoint model_ckpts/megascale_finetuned.pt --skempi_pdb_dir data/SKEMPI_v2/PDBs --skempi_path data/SKEMPI/filtered_skempi.csv
 ```
 
 ## Running evaluation on SKEMPI
+To reproduce results from the paper, run the following command.
 ```
-python skempi_eval.py --run_name refactor_test --fix_perm --fix_noise --batch_size 10000 --trials 1 --ensemble 20 --checkpoint "model_ckpts/nolinear1e-6_nofixmonomer_200.pt" --skempi_path data/SKEMPI/filtered_skempi.csv --skempi_pdb_dir /home/exx/arthur/data/SKEMPI_v2/PDBs --skempi_pdb_cache_path cache/skempi_full_mask_pdb_dict.pkl --skempi_split_path "data/SKEMPI/test_pdb.pkl"
+python skempi_eval.py --run_name EVAL --fix_perm --fix_noise --batch_size 10000 --trials 1 --ensemble 20 --checkpoint "model_ckpts/stabddg.pt" --skempi_path data/SKEMPI/filtered_skempi.csv --skempi_pdb_dir data/SKEMPI_v2/PDBs --skempi_pdb_cache_path cache/skempi_full_mask_pdb_dict.pkl --skempi_split_path "data/SKEMPI/test_pdb.pkl"
 ```
