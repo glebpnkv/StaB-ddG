@@ -10,17 +10,26 @@ import wandb
 from protddg.mpnn_utils import StructureDataset, ProteinMPNN, parse_PDB
 from protddg.model import ProtddG
 
-def validation_step(model, ddG_data, dataset_valid, name='val', device='cuda'):
+def validation_step(model, ddG_data, dataset_valid, batch_size=20000, name='val', device='cuda'):
     val_spearman=[]
     val_pearson=[]
     all_pred = []
     all_labels = []
-    for _, sample in enumerate(dataset_valid):
-        # ddG prediction
-        mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs'].to(device)
-        pred = model.folding_ddG(sample, mut_seqs)
-
+    for sample in tqdm(dataset_valid):
         ddG = ddG_data[f'{sample['name']}.pdb']['ddG'].to(device)
+        mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs']
+        N = mut_seqs.shape[0]
+        M = batch_size // mut_seqs.shape[1] # convert number of tokens to number of sequences per batch
+
+        sample_pred = []
+        # Batching for mutants
+        for batch_idx in range(0, N, M):
+            B = min(N - batch_idx, M)
+            # ddG prediction
+            pred = model.folding_ddG(sample, mut_seqs[batch_idx:batch_idx+B])
+            sample_pred.append(pred.detach().cpu())
+
+        pred = torch.cat(sample_pred)
         
         sp, _ = spearmanr(pred.cpu().detach().numpy(), ddG.cpu().detach().numpy())
         val_spearman.append(sp)
@@ -96,8 +105,8 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
         if args.wandb:
             if e % args.val_freq == 0:
                 with torch.no_grad():
-                    valid_metrics = validation_step(model, ddG_data, dataset_valid, name='valid', device=device)
-                    test_metrics = validation_step(model, ddG_data, dataset_test, name='test', device=device)
+                    valid_metrics = validation_step(model, ddG_data, dataset_valid, batch_size=10000, name='valid', device=device)
+                    test_metrics = validation_step(model, ddG_data, dataset_test, batch_size=10000, name='test', device=device)
 
                 wandb.log(valid_metrics, step=e+1)
                 wandb.log(test_metrics, step=e+1)
