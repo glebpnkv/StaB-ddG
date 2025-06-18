@@ -225,12 +225,13 @@ class SKEMPIDataset(PPIDataset):
         for _, row in df.iterrows():
             mutations = row['Mutation(s)_cleaned'].split(',')
             row['mutations'] = mutations
+            ### If there is no ddG column, set it to 0
+            if 'ddG' not in row or pd.isna(row['ddG']):
+                row['ddG'] = 0.0
             processed_df.append(row[['#Pdb', 'mutations', 'ddG']])
 
         processed_skempi = pd.DataFrame(processed_df)
         return processed_skempi
-    
-    
 
 class YeastDataset(PPIDataset):
 

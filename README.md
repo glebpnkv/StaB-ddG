@@ -12,25 +12,26 @@ StaB-ddG requires as input PDB files and a csv file with mutations of interest.
 
 ## PDB files
 For a single ddG prediction, StaB-ddG requires 3 PDB files --- one for each binder and one for the entire complex. Specifically, the naming of the PDB files should follow:
-* Complex: `NAME_binder1chains_binder2chains.pdb`
+* Complex: `NAME.pdb`
 * Binder 1: `NAME_binder1chains.pdb`
 * Binder 2: `NAME_binder2chains.pdb`. 
 
-The chains specify what interface the ddG is computed over for a multichain complex. For example, to predict the binding ddG of the complex 7STF for the interface between chains HL and ABC, we should provide the following three PDB files: `7STF_HL_ABC.pdb`, `7STF_HL.pdb`, and `7STF_ABC.pdb`.
+The chains specify what interface the ddG is computed over for a multichain complex. For example, to predict the binding ddG of the complex 7STF for the interface between chains HL and ABC, we should provide the following three PDB files: `7STF.pdb`, `7STF_HL.pdb`, and `7STF_ABC.pdb`.
 
 ## Mutation csv file
-The mutation csv file should contain two columns, `#Pdb` and `Mutation(s)_cleaned`. The `#Pdb` column should contain the name of the complex PDB file without the `.pdb` suffix (e.g. `7STF_HL_ABC`). 
+The mutation csv file should contain two columns, `#Pdb` and `Mutation(s)_cleaned`. The `#Pdb` column should contain the name of the complex PDB file without the `.pdb` suffix (e.g. `7STF`). 
 
 The `Mutation(s)_cleaned` contains the mutations of interest. Each entry can have multiple mutations separated by commas. For example, `YH103H,QC7R` denotes a double mutant. The first character of a mutation string denotes the wild type amino acid, the second character the chain, followed by the position in the chain, and lastly the amino acid to mutate to. For example, `YH103H` denotes a mutation from Y to H at position 103 of chain H.
 ## Example
-TODO
-
+```
+python run_stabddg.py --run_name test --csv_path example/tcrm_case_study/tcrm_case_study_spr.csv --pdb_dir example/tcrm_case_study/spr_pdbs/ --pdb_cache_path cache/tcrm_case_study_spr --fix_perm --fix_noise --batch_size 10000 --checkpoint "model_ckpts/stabddg.pt" 
+```
 # Model training
 
 ## Fine-tuning on Megascale
 
 ```
-CUDA_VISIBLE_DEVICES=3 python megascale_finetune.py --run_name RUN_NAME --seed 0 --lr 1e-6 --fix_noise --dropout 0.0 --fix_perm --num_epochs 70 --wandb --val_freq 30 --batch_size 10000 --noise_level 0.2
+python megascale_finetune.py --run_name RUN_NAME --seed 0 --lr 1e-6 --fix_noise --dropout 0.0 --fix_perm --num_epochs 70 --wandb --val_freq 30 --batch_size 10000 --noise_level 0.2 --checkpoint model_ckpts/v_48_020.pt
 ```
 
 ## Fine-tuning on SKEMPI
