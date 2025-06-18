@@ -52,13 +52,13 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
         spearmans = []
 
         # Iterate through all training domains.
-        for _, sample in enumerate(dataset_train):
-            mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs'].to(device)
+        for sample in tqdm(dataset_train):
+            ddG = ddG_data[f'{sample['name']}.pdb']['ddG'].to(device)
+            mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs']
             N = mut_seqs.shape[0]
             M = batch_size // mut_seqs.shape[1] # convert number of tokens to number of sequences per batch
 
-            ddG = ddG_data[f'{sample['name']}.pdb']['ddG'].to(device)
-
+            
             # random shuffling
             permutation = torch.randperm(ddG.shape[0])
             ddG = ddG[permutation]
@@ -80,17 +80,19 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
                 optimizer.step()
 
                 train_sum.append(ddG_loss.item())
-                sample_pred.append(pred.detach())
+                sample_pred.append(pred.detach().cpu())
                 if args.single_batch:
                     break
 
             sample_pred = torch.cat(sample_pred)
-            sp, _ = spearmanr(sample_pred.cpu().detach().numpy(), ddG.cpu().detach().numpy()[:sample_pred.shape[0]])
+            sp, _ = spearmanr(sample_pred.detach().numpy(), ddG.cpu().detach().numpy()[:sample_pred.shape[0]])
             spearmans.append(sp)
 
         model.eval()
         if (e + 1) % args.model_save_freq == 0:
-            torch.save(model.pmpnn.state_dict(), f"cache/megascale_finetuned/{args.run_name}_epoch{e}.pt")
+            if not os.path.exists(args.model_save_dir):
+                os.makedirs(args.model_save_dir)
+            torch.save(model.pmpnn.state_dict(), f"{args.model_save_dir}/{args.run_name}_epoch{e}.pt")
         if args.wandb:
             if e % args.val_freq == 0:
                 with torch.no_grad():
@@ -102,8 +104,9 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
 
             wandb.log({'train_loss': np.mean(train_sum), 'train_spearman': np.mean(spearmans)}, step=e+1)
             wandb.log({'lr': optimizer.param_groups[0]['lr']}, step=e+1)
-
-    torch.save(model.pmpnn.state_dict(), f"cache/megascale_finetuned/{args.run_name}_final.pt")
+    if not os.path.exists(args.model_save_dir):
+        os.makedirs(args.model_save_dir)
+    torch.save(model.pmpnn.state_dict(), f"{args.model_save_dir}/{args.run_name}_final.pt")
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -114,6 +117,7 @@ if __name__ == "__main__":
     argparser.add_argument("--num_epochs", type=int, default=200)
     argparser.add_argument("--batch_size", type=int, default=30000)
     argparser.add_argument("--model_save_freq", type=int, default=10)
+    argparser.add_argument("--model_save_dir", type=str, default="cache/megascale_finetuned")
     argparser.add_argument("--wandb", action='store_true')
     argparser.add_argument("--single_batch", action='store_true') # Only sample one batch of mutants per domain during training.
     argparser.add_argument("--val_freq", type=int, default=10) # Train validation frequency

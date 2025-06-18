@@ -161,8 +161,16 @@ def finetune(model, train_dataset, val_dataset, args, lr=1e-5, batch_size=10000,
                     'train_spearman': avg_spearman/len(train_dataset), 
                     'train_rmse': avg_rmse/len(train_dataset)}, step=epoch+1)
             wandb.log({'lr': optimizer.param_groups[0]['lr']}, step=epoch+1)
+
         if args.model_save_freq != -1 and (epoch+1) % args.model_save_freq == 0:
+            # if model save directory does not exist, create it
+            if not os.path.exists(model_save_dir):
+                os.makedirs(model_save_dir)
             torch.save(model.pmpnn.state_dict(), os.path.join(model_save_dir, f"{args.run_name}_{epoch+1}.pt"))
+    
+    if not os.path.exists(model_save_dir):
+        os.makedirs(model_save_dir)
+        
     torch.save(model.pmpnn.state_dict(), os.path.join(model_save_dir, f"{args.run_name}_final.pt"))
 
 if __name__ == "__main__":
