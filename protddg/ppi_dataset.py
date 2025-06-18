@@ -13,7 +13,7 @@ class CombinedDataset(Dataset):
         self.dataset1 = dataset1
         self.dataset2 = dataset2
         print(f'Combined datasets of sizes {len(dataset1)} and {len(dataset2)} to get a dataset of size {len(dataset1) + len(dataset2)}/')
-        
+
     def __len__(self):
         return len(self.dataset1) + len(self.dataset2)
 
@@ -142,6 +142,10 @@ class PPIDataset(Dataset):
                     all_chains.append(key.split('_')[-1])
             dict['masked_list'] = all_chains
             dict['visible_list'] = []
+
+        cache_dir  = os.path.dirname(pdb_dict_cache_path) 
+        if cache_dir and not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
 
         with open(pdb_dict_cache_path, 'wb') as f:
             pickle.dump(pdb_dict, f)
