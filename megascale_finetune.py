@@ -121,7 +121,7 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     argparser.add_argument("--run_name", type=str, default="finetune")
-    argparser.add_argument("--checkpoint", type=str, default="new_ckpts/v_48_020.pt")
+    argparser.add_argument("--checkpoint", type=str, default="model_ckpts/v_48_020.pt")
     argparser.add_argument("--seed", type=int, default=0)
     argparser.add_argument("--num_epochs", type=int, default=200)
     argparser.add_argument("--batch_size", type=int, default=30000)
