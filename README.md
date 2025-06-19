@@ -4,7 +4,9 @@
 ```
 conda create --name protddg
 conda activate protddg
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+# depending on your CUDA driver version, can update to newer torch versions. 
+# Here we provide an example for 11.8.
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install tqdm wandb scipy pandas
 ```
 # Predicting binding ddG
