@@ -74,7 +74,7 @@ python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs --csv_path examp
 By default, the output will be saved in the same directory as the mutant csv file, with similar intermediate outputs saved in `--pdb_dir` as in the one mutant case.
 
 # Training and evaluation
-The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale folding stability dataset, then fine-tune on SKEMPI.
+The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
 ## Fine-tuning on Megascale
 The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
 
@@ -82,11 +82,14 @@ The Megascale stability dataset can be downloaded from https://zenodo.org/record
 python megascale_finetune.py --run_name RUN_NAME --megascale DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv --pdb_dir DIR/AlphaFold_model_PDBs --use_antithetic_variates --num_epochs 70 --checkpoint model_ckpts/proteinmpnn.pt
 ```
 
+The model checkpoints will be saved in `cache/megascale_finetuned` by default.
+
 ## Fine-tuning on SKEMPI
 A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `protddg/utils.py`. 
 ```
 python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl --epochs 200 --lr 1e-6 --run_name RUN_NAME --single_batch_train --use_antithetic_variates --checkpoint model_ckpts/megascale_finetuned.pt --skempi_pdb_dir data/SKEMPI_v2/PDBs --skempi_path data/SKEMPI/filtered_skempi.csv
 ```
+The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 
 ## Running evaluation on SKEMPI
 To reproduce results from the paper, run the following command.

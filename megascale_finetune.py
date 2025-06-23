@@ -246,8 +246,8 @@ if __name__ == "__main__":
     if args.wandb:
         print('Initializing weights and biases.')
         wandb.init(
-            project="thermostability",
-            entity='stanford-protein',
+            project="",
+            entity='',
             name=args.run_name, 
         )
         print('Weights and biases intialized.')

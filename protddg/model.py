@@ -45,7 +45,7 @@ class ProtddG(nn.Module):
             wt_seq = set_wt_seq
 
         decoding_order = self._get_decoding_order(chain_M) if self.use_antithetic_variates else None
-        backbone_noise = self._get_backbone_noise(X) if self.se_antithetic_variate else None
+        backbone_noise = self._get_backbone_noise(X) if self.use_antithetic_variates else None
         
         wt_dG = self.folding_dG(domain, wt_seq, decoding_order=decoding_order, backbone_noise=backbone_noise)
         mut_dG = self.folding_dG(domain, mut_seqs, decoding_order=decoding_order, backbone_noise=backbone_noise)
