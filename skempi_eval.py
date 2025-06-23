@@ -78,10 +78,9 @@ if __name__ == "__main__":
     argparser.add_argument("--ensemble", type=int, default=20)
     argparser.add_argument("--yeast_pdb_cache_path", type=str, default="")
     argparser.add_argument("--output_dir", type=str, default="cache")
-    argparser.add_argument("--trials", type=int, default=5)
+    argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
-    argparser.add_argument("--fix_perm", action='store_true')
-    argparser.add_argument("--fix_noise", action='store_true')
+    argparser.add_argument("--use_antithetic_variates", action='store_true')
     argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--device", type=str, default="cuda")
@@ -115,7 +114,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=False, fix_noise=args.fix_noise, fix_perm=args.fix_perm)
+    model = ProtddG(pmpnn=pmpnn, scale_binder=False, use_antithetic_variates=args.use_antithetic_variates)
     
     model.to(device)
     model.eval()

@@ -1,0 +1,15 @@
+name: stabddg
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pip
+  - pip:
+    - torch==2.7.1
+    - torchvision==0.22.1
+    - torchaudio==2.7.1
+    - tqdm==4.67.1
+    - wandb==0.20.1
+    - scipy==1.16.0
+    - pandas==2.3.0
+    - biopython==1.85

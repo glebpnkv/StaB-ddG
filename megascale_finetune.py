@@ -133,11 +133,10 @@ if __name__ == "__main__":
     argparser.add_argument("--ckpt_path", type=str, default='soluble_model_weights/v_48_020.pt')
     argparser.add_argument("--noise_level", type=float, default=0.2) # Backbone noise.
     argparser.add_argument("--dropout", type=float, default=0.0) # Dropout during model training. 
-    argparser.add_argument("--fix_perm", action='store_true') # Fix permutation order between mutant and wildtype during decoding.
-    argparser.add_argument("--fix_noise", action='store_true') # Fix the backbone noise added between mutant and wildtype.
+    argparser.add_argument("--use_antithetic_variates", action='store_true') # Fix permutation order between mutant and wildtype during decoding.
     argparser.add_argument("--lam", type=float, default=0.0) # KL regularization strength.
     argparser.add_argument("--pdb_dir", type=str, default="AlphaFold_model_PDBs")
-    argparser.add_argument("--rocklin_csv", type=str, default='Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
+    argparser.add_argument("--megascale", type=str, default='Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
     argparser.add_argument("--lr", type=float, default=1e-6)
     argparser.add_argument("--random_init", action='store_true')
     args = argparser.parse_args()
@@ -179,7 +178,7 @@ if __name__ == "__main__":
     ALPHABET = 'ACDEFGHIKLMNPQRSTVWYX'
     ddG_data = {}
 
-    df_2 = pd.read_csv(args.rocklin_csv)
+    df_2 = pd.read_csv(args.megascale)
     dataset_3 = df_2[df_2['ddG_ML']!='-']
     dataset_3_noindel = dataset_3.loc[~dataset_3.mut_type.str.contains("ins") & ~dataset_3.mut_type.str.contains("del"), :].reset_index(drop=True)
 
@@ -238,7 +237,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=False, fix_noise=args.fix_noise, fix_perm=args.fix_perm)
+    model = ProtddG(pmpnn=pmpnn, scale_binder=False, use_antithetic_variates=args.use_antithetic_variates)
     
     model.to(device)
     model.eval()

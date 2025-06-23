@@ -1,4 +1,4 @@
-### Copied from ProteinMPNN training/model_utils.py
+### Copied with modification from ProteinMPNN training/model_utils.py
 
 # MIT License
 

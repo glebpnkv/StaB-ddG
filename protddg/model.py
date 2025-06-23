@@ -3,11 +3,10 @@ from torch import nn
 from .mpnn_utils import featurize
 
 class ProtddG(nn.Module):
-    def __init__(self, pmpnn, scale_binder=False, fix_perm=False, fix_noise=False, device='cuda'):
+    def __init__(self, pmpnn, scale_binder=False, use_antithetic_variates=False, device='cuda'):
         super(ProtddG, self).__init__()
         self.pmpnn = pmpnn
-        self.fix_perm = fix_perm
-        self.fix_noise = fix_noise
+        self.use_antithetic_variates = use_antithetic_variates
         self.device = device
         self.use_beta = scale_binder
 
@@ -27,8 +26,8 @@ class ProtddG(nn.Module):
         chain_M_ = chain_M_.repeat(B, 1)
         residue_idx_, chain_encoding_all_ = residue_idx_.repeat(B, 1), chain_encoding_all_.repeat(B, 1)
         
-        order = decoding_order.repeat(B, 1) if self.fix_perm else None
-        backbone_noise = backbone_noise.repeat(B, 1, 1, 1) if self.fix_noise else None
+        order = decoding_order.repeat(B, 1) if self.use_antithetic_variates else None
+        backbone_noise = backbone_noise.repeat(B, 1, 1, 1) if self.use_antithetic_variates else None
 
         log_probs = self.pmpnn(X_, S_, mask_, chain_M_, residue_idx_, chain_encoding_all_, 
                               fix_order=order, fix_backbone_noise=backbone_noise)
@@ -45,8 +44,8 @@ class ProtddG(nn.Module):
         if not set_wt_seq is None:
             wt_seq = set_wt_seq
 
-        decoding_order = self._get_decoding_order(chain_M) if self.fix_perm else None
-        backbone_noise = self._get_backbone_noise(X) if self.fix_noise else None
+        decoding_order = self._get_decoding_order(chain_M) if self.use_antithetic_variates else None
+        backbone_noise = self._get_backbone_noise(X) if self.se_antithetic_variate else None
         
         wt_dG = self.folding_dG(domain, wt_seq, decoding_order=decoding_order, backbone_noise=backbone_noise)
         mut_dG = self.folding_dG(domain, mut_seqs, decoding_order=decoding_order, backbone_noise=backbone_noise)
