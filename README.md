@@ -15,7 +15,7 @@ We provide
 * `megascale_finetune.py` fine-tuning ProteinMPNN on folding stability data
 * `skempi_finetune.py` fine-tuning StaB-ddG on binding data from SKEMPI
 * `skempi_eval.py` evaluating StaB-ddG on SKEMPI test split
-* `protddg/`
+* `stabddg/`
     * `model.py` StaB-ddG model
     * `ppi_dataset.py` dataset classes for binding data
     * `mpnn_utils.py` code copied with modification from [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/training/model_utils.py). Added `fix_order` and `fix_backbone_noise` flags in `ProteinMPNN.forward()` which correspond to the usage of the antithetic variates method described in the paper when set to true.
@@ -41,7 +41,7 @@ conda env create -f environment.yaml
 conda activate stabddg
 ```
 # Predicting binding $\Delta \Delta G$
-StaB-ddG requires as input PDB files and a csv file with mutations of interest, and predicts the $\Delta \Delta G$ in the unit kilocalories per mole (kcal/mol). We use the convention that a negative value ($\Delta \Delta G < 0$) represents a destabilizing mutation.
+StaB-ddG requires as input PDB files and a csv file with mutations of interest, and predicts the $\Delta \Delta G$ in the unit of kilocalories per mole (kcal/mol). We use the convention that a negative value ($\Delta \Delta G < 0$) represents a destabilizing mutation.
 
 ## Predicting $\Delta \Delta G$ for one mutant
 For a single ddG prediction, StaB-ddG requires a pdb file, the chains specifying the two binders, and a mutation string.
@@ -53,7 +53,8 @@ For a single ddG prediction, StaB-ddG requires a pdb file, the chains specifying
 ### Example
 We provide an example that predicts the effect of the mutation `EA63Q,QD30V,KA66A` on `1AO7`.
 ```
-python run_stabddg.py --pdb_path examples/one_mutation/1AO7.pdb --mutation EA63Q,QD30V,KA66A --chains ABC_DE
+python run_stabddg.py --pdb_path examples/one_mutation/1AO7.pdb \
+    --mutation EA63Q,QD30V,KA66A --chains ABC_DE
 ```
 This will create a directory `1AO7/` with the following files:
 * `output.csv` contains the predicted `$\Delta \Delta G$` in column `pred_1`
@@ -65,11 +66,12 @@ This will create a directory `1AO7/` with the following files:
 
 
 ## Predicting $\Delta \Delta G$ for a list of mutants
-A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `Mutation(s)_cleaned`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains without the `.pdb` suffix (e.g. `1AO7_ABC_DE`). The `Mutation(s)_cleaned` contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
+A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `mutation`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains without the `.pdb` suffix (e.g. `1AO7_ABC_DE`). The `mutation` column contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
 ### Example
 An example is provided in `examples/list_of_mutations`. Predictions can be generated using the following command:
 ```
-python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs --csv_path examples/list_of_mutations/mutations.csv
+python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs \
+    --csv_path examples/list_of_mutations/mutations.csv
 ```
 By default, the output will be saved in the same directory as the mutant csv file, with similar intermediate outputs saved in `--pdb_dir` as in the one mutant case.
 
@@ -79,22 +81,37 @@ The two fine-tuning sections map onto the two fine-tuning steps described in the
 The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
 
 ```
-python megascale_finetune.py --run_name RUN_NAME --megascale DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv --pdb_dir DIR/AlphaFold_model_PDBs --use_antithetic_variates --num_epochs 70 --checkpoint model_ckpts/proteinmpnn.pt
+python megascale_finetune.py --run_name RUN_NAME \
+    --megascale DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
+    --pdb_dir DIR/AlphaFold_model_PDBs \
+    --use_antithetic_variates \
+    --num_epochs 70 --checkpoint model_ckpts/proteinmpnn.pt
 ```
 
 The model checkpoints will be saved in `cache/megascale_finetuned` by default.
 
 ## Fine-tuning on SKEMPI
-A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `protddg/utils.py`. 
+A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `stabddg/utils.py`. 
 ```
-python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl --epochs 200 --lr 1e-6 --run_name RUN_NAME --single_batch_train --use_antithetic_variates --checkpoint model_ckpts/megascale_finetuned.pt --skempi_pdb_dir data/SKEMPI_v2/PDBs --skempi_path data/SKEMPI/filtered_skempi.csv
+python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
+    --epochs 200 --lr 1e-6 \
+    --run_name RUN_NAME --single_batch_train --use_antithetic_variates \
+    --checkpoint model_ckpts/megascale_finetuned.pt \
+    --skempi_pdb_dir data/SKEMPI_v2/PDBs \
+    --skempi_path data/SKEMPI/filtered_skempi.csv
 ```
 The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 
 ## Running evaluation on SKEMPI
 To reproduce results from the paper, run the following command.
 ```
-python skempi_eval.py --run_name EVAL --use_antithetic_variates --batch_size 10000 --checkpoint "model_ckpts/stabddg.pt" --skempi_path data/SKEMPI/filtered_skempi.csv --skempi_pdb_dir data/SKEMPI_v2/PDBs --skempi_pdb_cache_path cache/skempi_full_mask_pdb_dict.pkl --skempi_split_path "data/SKEMPI/test_pdb.pkl"
+python skempi_eval.py --run_name EVAL \
+    --use_antithetic_variates --batch_size 10000 \
+    --checkpoint "model_ckpts/stabddg.pt" \
+    --skempi_path data/SKEMPI/filtered_skempi.csv \
+    --skempi_pdb_dir data/SKEMPI_v2/PDBs \
+    --skempi_pdb_cache_path cache/skempi_full_mask_pdb_dict.pkl \
+    --skempi_split_path "data/SKEMPI/test_pdb.pkl"
 ```
 
 # Acknowledgements

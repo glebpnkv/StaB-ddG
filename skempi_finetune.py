@@ -7,9 +7,9 @@ import wandb
 
 from scipy.stats import spearmanr, pearsonr
 from tqdm import tqdm
-from protddg.mpnn_utils import ProteinMPNN
-from protddg.ppi_dataset import SKEMPIDataset, YeastDataset, CombinedDataset
-from protddg.model import ProtddG
+from stabddg.mpnn_utils import ProteinMPNN
+from stabddg.ppi_dataset import SKEMPIDataset, YeastDataset, CombinedDataset
+from stabddg.model import StaBddG
 
 def val_epoch(model, val_dataset, loss_fn, trials=3, 
               val_ensemble=3, batch_size=10000, device='cuda'):
@@ -246,7 +246,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=args.scale_binder, use_antithetic_variates=args.use_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, scale_binder=args.scale_binder, use_antithetic_variates=args.use_antithetic_variates)
     model.to(device)
 
     if args.wandb:

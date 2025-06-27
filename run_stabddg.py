@@ -3,10 +3,10 @@ import torch
 import os
 import argparse
 from tqdm import tqdm
-from protddg.mpnn_utils import ProteinMPNN
-from protddg.model import ProtddG
-from protddg.ppi_dataset import SKEMPIDataset
-from protddg.utils import extract_chains
+from stabddg.mpnn_utils import ProteinMPNN
+from stabddg.model import StaBddG
+from stabddg.ppi_dataset import SKEMPIDataset
+from stabddg.utils import extract_chains
 
 def run(model, dataset, ensemble=20, batch_size=10000):
     pred_df=[]
@@ -116,7 +116,8 @@ if __name__ == "__main__":
                 raise FileNotFoundError(f"PDB file {pdb_path} does not exist.")
             extract_chains(pdb_path, f"{pdb_dir}/{pdb_base}_{binder1_chains}.pdb", binder1_chains,
                            f"{pdb_dir}/{pdb_base}_{binder2_chains}.pdb", binder2_chains)
-        
+        mut_csv['Mutation(s)_cleaned'] = mut_csv['mutation']
+        mut_csv.to_csv(csv_path, index=False)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if args.device == "cuda" else torch.device("cpu")
     
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=False, use_antithetic_variates=True)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=True)
     
     model.to(device)
     model.eval()

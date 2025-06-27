@@ -2,9 +2,9 @@ import torch
 from torch import nn
 from .mpnn_utils import featurize
 
-class ProtddG(nn.Module):
+class StaBddG(nn.Module):
     def __init__(self, pmpnn, scale_binder=False, use_antithetic_variates=False, device='cuda'):
-        super(ProtddG, self).__init__()
+        super(StaBddG, self).__init__()
         self.pmpnn = pmpnn
         self.use_antithetic_variates = use_antithetic_variates
         self.device = device

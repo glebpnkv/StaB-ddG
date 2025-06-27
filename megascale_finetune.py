@@ -7,8 +7,8 @@ import pickle
 from scipy.stats import spearmanr, pearsonr
 from tqdm import tqdm
 import wandb
-from protddg.mpnn_utils import StructureDataset, ProteinMPNN, parse_PDB
-from protddg.model import ProtddG
+from stabddg.mpnn_utils import StructureDataset, ProteinMPNN, parse_PDB
+from stabddg.model import StaBddG
 
 def validation_step(model, ddG_data, dataset_valid, batch_size=20000, name='val', device='cuda'):
     val_spearman=[]
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=False, use_antithetic_variates=args.use_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=args.use_antithetic_variates)
     
     model.to(device)
     model.eval()

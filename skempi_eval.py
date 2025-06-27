@@ -5,9 +5,9 @@ import os
 import argparse
 from scipy.stats import spearmanr, pearsonr
 from tqdm import tqdm
-from protddg.mpnn_utils import ProteinMPNN
-from protddg.model import ProtddG
-from protddg.ppi_dataset import SKEMPIDataset, YeastDataset
+from stabddg.mpnn_utils import ProteinMPNN
+from stabddg.model import StaBddG
+from stabddg.ppi_dataset import SKEMPIDataset, YeastDataset
 
 def eval(model, dataset, ensemble=20, batch_size=10000):
     val_spearman=[]
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     argparser.add_argument("--output_dir", type=str, default="cache")
     argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
-    argparser.add_argument("--use_antithetic_variates", action='store_true')
+    argparser.add_argument("--no_antithetic_variates", action='store_false')
     argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--device", type=str, default="cuda")
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = ProtddG(pmpnn=pmpnn, scale_binder=False, use_antithetic_variates=args.use_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=not args.no_antithetic_variates)
     
     model.to(device)
     model.eval()
@@ -145,8 +145,3 @@ if __name__ == "__main__":
             combined_df[f'pred_{i+1}'] = pred_df['Prediction']
 
     combined_df.to_csv(os.path.join(args.output_dir, f'{args.run_name}.csv'))
-    print('=========Results=========')
-    print('Checkpoint', args.checkpoint)
-    print('Mean Spearman', np.mean(spearmans), '+-', np.std(spearmans))
-    print('Mean Pearson', np.mean(pearsons), '+-', np.std(pearsons))
-    print('Mean RMSE', np.mean(rmses), '+-', np.std(rmses))
