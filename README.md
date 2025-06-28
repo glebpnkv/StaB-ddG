@@ -1,5 +1,4 @@
-# StaB-ddG
-## Predicting mutational effects on protein binding from folding energy
+## StaB-ddG: Predicting mutational effects on protein binding from folding energy
 
 StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper][https://icml.cc/virtual/2025/poster/45926]. 
 
@@ -28,29 +27,30 @@ We provide
     * `rocklin/mega_splits.pkl` megascale dataset splits from https://github.com/Kuhlman-Lab/ThermoMPNN
     * `SKEMPI/`
         * `skempi_v2.csv` unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index
-        * `filtered_skempi.csv` filtered SKEMPI csv file
+        * `quality_filtering.ipynb` and `skempi_splits.ipynb` filtering and splitting script corresponding to the method described in the paper.
+        * `filtered_skempi.csv` the output of `quality_filtering.ipynb` containing a subset of the rows in `skempi_v2.csv`.  An additional column indicates the cluster assignment associated the train/test split.
         * `train_pdb.pkl, train_clusters.pkl` training split
         * `test_pdb.pkl, test_clusters.pkl` test split
-        * `quality_filtering.ipynb` and `skempi_splits.ipynb` filtering and splitting script corresponding to the method described in the paper.
 
 
-# Setup
+## Setup
 We use conda to manage required dependencies. The are few required packages (see `environment.yaml`); alternatively to creating a new environment, you can run StaB-ddG with an existing environment with PyTorch, after `pip install tqdm scipy wandb pandas`.
 ```
 conda env create -f environment.yaml
 conda activate stabddg
 ```
-# Predicting binding $\Delta \Delta G$
+
+## Predicting binding $\Delta \Delta G$
 StaB-ddG requires as input PDB files and a csv file with mutations of interest, and predicts the $\Delta \Delta G$ in the unit of kilocalories per mole (kcal/mol). We use the convention that a negative value ($\Delta \Delta G < 0$) represents a destabilizing mutation.
 
-## Predicting $\Delta \Delta G$ for one mutant
+### Predicting $\Delta \Delta G$ for one mutant
 For a single ddG prediction, StaB-ddG requires a pdb file, the chains specifying the two binders, and a mutation string.
 * `--pdb_path` path to the wild type structure.
 * `--mutation` a single mutation or multiple mutations separated by commas. For example, `YH103H,QC7R` denotes a double mutant. The first character of a mutation string denotes the wild type amino acid, the second character the chain, followed by the position in the chain, and lastly the amino acid to mutate to. For example, `YH103H` denotes a mutation from Y to H at position 103 of chain H. 
 * `--chains` chains specifying what interface the $\Delta \Delta G$ is computed over for a multichain complex, separated by an underscore. For example, `ABC_DE` denotes that the energy is computed between the interface of chains `ABC` and `DE`. 
 * `--mc_samples` the number of Monte Carlo samples to average over for variance reduction. This is set to 20 by default.
 
-### Example
+#### Example
 We provide an example that predicts the effect of the mutation `EA63Q,QD30V,KA66A` on `1AO7`.
 ```
 python run_stabddg.py --pdb_path examples/one_mutation/1AO7.pdb \
@@ -65,9 +65,9 @@ This will create a directory `1AO7/` with the following files:
 * `input.csv` intermediate input file
 
 
-## Predicting $\Delta \Delta G$ for a list of mutants
+### Predicting $\Delta \Delta G$ for a list of mutants
 A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `mutation`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains without the `.pdb` suffix (e.g. `1AO7_ABC_DE`). The `mutation` column contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
-### Example
+#### Example
 An example is provided in `examples/list_of_mutations`. Predictions can be generated using the following command:
 ```
 python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs \
@@ -75,9 +75,9 @@ python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs \
 ```
 By default, the output will be saved in the same directory as the mutant csv file, with similar intermediate outputs saved in `--pdb_dir` as in the one mutant case.
 
-# Training and evaluation
+## Training and evaluation
 The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
-## Fine-tuning on Megascale
+### Fine-tuning on Megascale
 The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
 
 ```
@@ -90,7 +90,7 @@ python megascale_finetune.py --run_name RUN_NAME \
 
 The model checkpoints will be saved in `cache/megascale_finetuned` by default.
 
-## Fine-tuning on SKEMPI
+### Fine-tuning on SKEMPI
 A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `stabddg/utils.py`. 
 ```
 python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
@@ -102,7 +102,7 @@ python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
 ```
 The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 
-## Running evaluation on SKEMPI
+### Running evaluation on SKEMPI
 To reproduce results from the paper, run the following command.
 ```
 python skempi_eval.py --run_name EVAL \
@@ -114,7 +114,7 @@ python skempi_eval.py --run_name EVAL \
     --skempi_split_path "data/SKEMPI/test_pdb.pkl"
 ```
 
-# Acknowledgements
+## Acknowledgements
 * Code built upon [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/blob/main/protein_mpnn_utils.py) and [Graph-Based Protein Design](https://github.com/jingraham/neurips19-graph-protein-design)
 * Folding stability data collected by [Tsuboyama et al.](https://www.nature.com/articles/s41586-023-06328-6), and with train/test splits by [Dieckhaus et al.](https://github.com/Kuhlman-Lab/ThermoMPNN)
 * Binding energy data curated from SKEMPIV2 by [Jankauskaite et al.](https://academic.oup.com/bioinformatics/article/35/3/462/5055583)
