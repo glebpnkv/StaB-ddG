@@ -80,7 +80,7 @@ if __name__ == "__main__":
     argparser.add_argument("--output_dir", type=str, default="cache")
     argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
-    argparser.add_argument("--no_antithetic_variates", action='store_false')
+    # argparser.add_argument("--no_antithetic_variates", action='store_false')
     argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--device", type=str, default="cuda")
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=not args.no_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=True)
     
     model.to(device)
     model.eval()

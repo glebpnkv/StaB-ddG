@@ -3,14 +3,11 @@ from torch import nn
 from .mpnn_utils import featurize
 
 class StaBddG(nn.Module):
-    def __init__(self, pmpnn, scale_binder=False, use_antithetic_variates=False, device='cuda'):
+    def __init__(self, pmpnn, use_antithetic_variates=False, device='cuda'):
         super(StaBddG, self).__init__()
         self.pmpnn = pmpnn
         self.use_antithetic_variates = use_antithetic_variates
         self.device = device
-        self.use_beta = scale_binder
-
-        self.beta = nn.Parameter(torch.tensor(1.0))
 
     def get_wt_seq(self, domain):
         """ Returns the wild type sequence of a protein. """
@@ -61,10 +58,8 @@ class StaBddG(nn.Module):
         complex_ddG_fold = self.folding_ddG(complex, complex_mut_seqs)
         binder1_ddG_fold = self.folding_ddG(binder1, binder1_mut_seqs)
         binder2_ddG_fold = self.folding_ddG(binder2, binder2_mut_seqs)
-
-        beta = self.beta if self.use_beta else 1.0
         
-        ddG = complex_ddG_fold - (binder1_ddG_fold + binder2_ddG_fold) * beta
+        ddG = complex_ddG_fold - (binder1_ddG_fold + binder2_ddG_fold)
   
         return ddG
 
