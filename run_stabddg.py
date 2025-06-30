@@ -106,16 +106,8 @@ if __name__ == "__main__":
         pdb_cache_path = f'{pdb_dir}/structure_cache.pkl'
         output_dir = args.output_dir if args.output_dir else os.path.dirname(csv_path)
 
-        ### split the input pdb files into chains
+        ### rename mutation column to be consistent with SKEMPI column name
         mut_csv = pd.read_csv(csv_path)
-        pdbs = mut_csv['#Pdb'].unique()
-        for pdb in pdbs:
-            pdb_base, binder1_chains, binder2_chains = pdb.split('_')
-            pdb_path = os.path.join(pdb_dir, f"{pdb_base}.pdb")
-            if not os.path.exists(pdb_path):
-                raise FileNotFoundError(f"PDB file {pdb_path} does not exist.")
-            extract_chains(pdb_path, f"{pdb_dir}/{pdb_base}_{binder1_chains}.pdb", binder1_chains,
-                           f"{pdb_dir}/{pdb_base}_{binder2_chains}.pdb", binder2_chains)
         mut_csv['Mutation(s)_cleaned'] = mut_csv['mutation']
         mut_csv.to_csv(csv_path, index=False)
     

@@ -7,6 +7,7 @@ import numpy as np
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from .mpnn_utils import parse_PDB
+from .utils import extract_chains
 
 class CombinedDataset(Dataset):
     def __init__(self, dataset1, dataset2):
@@ -44,8 +45,21 @@ class PPIDataset(Dataset):
                 split_pdbs = pickle.load(f)
             ddG_df = ddG_df[ddG_df['#Pdb'].isin(split_pdbs)]
 
-        ### Get PDB file names
+        ### split the input pdb files into chains
         complex_names = set(ddG_df['#Pdb'].to_list())
+        for pdb in complex_names:
+            pdb_base, binder1_chains, binder2_chains = pdb.split('_')
+            pdb_path = os.path.join(pdb_dir, f"{pdb_base}.pdb")
+            
+            if not os.path.exists(pdb_path):
+                raise FileNotFoundError(f"PDB file {pdb_path} does not exist.")
+            
+            if not os.path.exists(f"{pdb_dir}/{pdb_base}_{binder1_chains}.pdb") or \
+               not os.path.exists(f"{pdb_dir}/{pdb_base}_{binder2_chains}.pdb"):
+                extract_chains(pdb_path, f"{pdb_dir}/{pdb_base}_{binder1_chains}.pdb", binder1_chains,
+                            f"{pdb_dir}/{pdb_base}_{binder2_chains}.pdb", binder2_chains)
+            
+        ### Get PDB file names
         self.pdb_names = []
         self.pdb_file_names = []
         for complex_name in complex_names:
