@@ -95,7 +95,7 @@ A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi
 ```
 python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
     --epochs 200 --lr 1e-6 \
-    --run_name RUN_NAME --single_batch_train --use_antithetic_variates \
+    --run_name RUN_NAME --single_batch_train \
     --checkpoint model_ckpts/megascale_finetuned.pt \
     --skempi_pdb_dir data/SKEMPI_v2/PDBs \
     --skempi_path data/SKEMPI/filtered_skempi.csv
@@ -106,7 +106,7 @@ The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 To reproduce results from the paper, run the following command.
 ```
 python skempi_eval.py --run_name EVAL \
-    --use_antithetic_variates --batch_size 10000 \
+    --batch_size 10000 \
     --checkpoint "model_ckpts/stabddg.pt" \
     --skempi_path data/SKEMPI/filtered_skempi.csv \
     --skempi_pdb_dir data/SKEMPI_v2/PDBs \

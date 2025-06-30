@@ -62,7 +62,7 @@ def eval(model, dataset, ensemble=20, batch_size=10000):
         val_rmse.append(rmse)
 
     pred_df = pd.concat(pred_df, ignore_index=True)
-    return pred_df, np.mean(val_spearman), np.mean(val_pearson), np.mean(val_rmse)
+    return pred_df#, np.mean(val_spearman), np.mean(val_pearson), np.mean(val_rmse)
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -119,27 +119,10 @@ if __name__ == "__main__":
     model.to(device)
     model.eval()
 
-    spearmans = []
-    pearsons = []
-    rmses = []
-
     combined_df = None
     with torch.no_grad():
         for i in tqdm(range(args.trials)):
-            (
-                pred_df,
-                trial_spearman,
-                trial_pearson,
-                trial_rmse,
-            ) = eval(
-                model,
-                dataset,
-                ensemble=args.ensemble,
-                batch_size=args.batch_size
-            )
-            spearmans.append(trial_spearman)
-            pearsons.append(trial_pearson)
-            rmses.append(trial_rmse)
+            pred_df = eval(model, dataset, ensemble=args.ensemble, batch_size=args.batch_size)
             if i == 0:
                 combined_df = pred_df[['Name', 'Mutation', 'ddG']]
             combined_df[f'pred_{i+1}'] = pred_df['Prediction']
