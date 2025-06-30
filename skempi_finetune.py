@@ -201,7 +201,7 @@ if __name__ == "__main__":
     argparser.add_argument("--train_val_freq", type=int, default=-1)
     argparser.add_argument("--val_trials", type=int, default=5)
     argparser.add_argument("--val_ensembles", type=int, default=5)
-    argparser.add_argument("--use_antithetic_variates", action='store_true')
+    # argparser.add_argument("--use_antithetic_variates", action='store_true')
     argparser.add_argument("--decode_mut_last", action='store_true')
     argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
@@ -246,7 +246,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, scale_binder=args.scale_binder, use_antithetic_variates=args.use_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, scale_binder=args.scale_binder, use_antithetic_variates=True)
     model.to(device)
 
     if args.wandb:
