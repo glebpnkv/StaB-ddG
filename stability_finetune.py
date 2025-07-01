@@ -16,8 +16,9 @@ def validation_step(model, ddG_data, dataset_valid, batch_size=20000, name='val'
     all_pred = []
     all_labels = []
     for sample in tqdm(dataset_valid):
-        ddG = ddG_data[f'{sample['name']}.pdb']['ddG'].to(device)
-        mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs']
+        pdb_name = sample['name']
+        ddG = ddG_data[f'{pdb_name}.pdb']['ddG'].to(device)
+        mut_seqs = ddG_data[f'{pdb_name}.pdb']['mut_seqs']
         N = mut_seqs.shape[0]
         M = batch_size // mut_seqs.shape[1] # convert number of tokens to number of sequences per batch
 
@@ -55,15 +56,16 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     ddG_loss_fn  = torch.nn.MSELoss()
 
-    for e in tqdm(range(args.num_epochs)):
+    for e in tqdm(range(args.num_epochs), desc="Epoch"):
         model.train()
         train_sum = []
         spearmans = []
 
         # Iterate through all training domains.
-        for sample in tqdm(dataset_train):
-            ddG = ddG_data[f'{sample['name']}.pdb']['ddG'].to(device)
-            mut_seqs = ddG_data[f'{sample['name']}.pdb']['mut_seqs']
+        for sample in dataset_train:
+            pdb_name = sample['name']
+            ddG = ddG_data[f'{pdb_name}.pdb']['ddG'].to(device)
+            mut_seqs = ddG_data[f'{pdb_name}.pdb']['mut_seqs']
             N = mut_seqs.shape[0]
             M = batch_size // mut_seqs.shape[1] # convert number of tokens to number of sequences per batch
 
@@ -121,22 +123,23 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     argparser.add_argument("--run_name", type=str, default="finetune")
-    argparser.add_argument("--checkpoint", type=str, default="model_ckpts/v_48_020.pt")
+    argparser.add_argument("--checkpoint", type=str, default="model_ckpts/proteinmpnn.pt")
     argparser.add_argument("--seed", type=int, default=0)
-    argparser.add_argument("--num_epochs", type=int, default=200)
+    argparser.add_argument("--num_epochs", type=int, default=70)
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--model_save_freq", type=int, default=10)
-    argparser.add_argument("--model_save_dir", type=str, default="cache/megascale_finetuned")
+    argparser.add_argument("--model_save_dir", type=str, default="cache/stability_finetuned")
     argparser.add_argument("--wandb", action='store_true')
-    argparser.add_argument("--single_batch", action='store_true') # Only sample one batch of mutants per domain during training.
+    # Sample only one batch of mutants per domain during training.
+    argparser.add_argument("--single_batch", action='store_true') 
     argparser.add_argument("--val_freq", type=int, default=10) # Train validation frequency
-    argparser.add_argument("--ckpt_path", type=str, default='soluble_model_weights/v_48_020.pt')
     argparser.add_argument("--noise_level", type=float, default=0.2) # Backbone noise.
     argparser.add_argument("--dropout", type=float, default=0.0) # Dropout during model training. 
-    argparser.add_argument("--use_antithetic_variates", action='store_true') # Fix permutation order between mutant and wildtype during decoding.
+    # Do not permutation order between mutant and wildtype during decoding.
+    argparser.add_argument("--no_antithetic_variates", action='store_true') 
     argparser.add_argument("--lam", type=float, default=0.0) # KL regularization strength.
     argparser.add_argument("--pdb_dir", type=str, default="AlphaFold_model_PDBs")
-    argparser.add_argument("--megascale", type=str, default='Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
+    argparser.add_argument("--stability_data", type=str, default='Tsuboyama2023_Dataset2_Dataset3_20230416.csv')
     argparser.add_argument("--lr", type=float, default=1e-6)
     argparser.add_argument("--random_init", action='store_true')
     args = argparser.parse_args()
@@ -146,7 +149,7 @@ if __name__ == "__main__":
     # Dataset preprocessing/loading
 
     # Read split files
-    with open('rocklin/mega_splits.pkl', 'rb') as f:
+    with open('data/rocklin/mega_splits.pkl', 'rb') as f:
         splits = pickle.load(f)
     train_names = splits['train']
     val_names = splits['val'].tolist()
@@ -154,21 +157,21 @@ if __name__ == "__main__":
 
     # Load AF predicted structures
     pdb_dict_train = []
-    for name in tqdm(train_names):
+    for name in tqdm(train_names, desc="Loading train set"):
         name = name.split('.pdb', 1)[0] + '.pdb'
         name = name.replace("|", ':')
         path = os.path.join(args.pdb_dir, name)
         pdb_dict_train.append(parse_PDB(path)[0])
 
     pdb_dict_val = []
-    for name in tqdm(val_names):
+    for name in tqdm(val_names, desc="Loading validation set"):
         name = name.split('.pdb', 1)[0] + '.pdb'
         name = name.replace("|", ':')
         path = os.path.join(args.pdb_dir, name)
         pdb_dict_val.append(parse_PDB(path)[0])
 
     pdb_dict_test = []
-    for name in tqdm(test_names):
+    for name in tqdm(test_names, desc="Loading test set"):
         name = name.split('.pdb', 1)[0] + '.pdb'
         name = name.replace("|", ':')
         path = os.path.join(args.pdb_dir, name)
@@ -178,7 +181,7 @@ if __name__ == "__main__":
     ALPHABET = 'ACDEFGHIKLMNPQRSTVWYX'
     ddG_data = {}
 
-    df_2 = pd.read_csv(args.megascale)
+    df_2 = pd.read_csv(args.stability_data, low_memory=False)
     dataset_3 = df_2[df_2['ddG_ML']!='-']
     dataset_3_noindel = dataset_3.loc[~dataset_3.mut_type.str.contains("ins") & ~dataset_3.mut_type.str.contains("del"), :].reset_index(drop=True)
 
@@ -237,7 +240,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=args.use_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=not args.no_antithetic_variates)
     
     model.to(device)
     model.eval()

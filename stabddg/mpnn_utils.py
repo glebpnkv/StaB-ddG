@@ -630,7 +630,8 @@ class ProteinMPNN(nn.Module):
         mask_attend = gather_nodes(mask.unsqueeze(-1),  E_idx).squeeze(-1)
         mask_attend = mask.unsqueeze(-1) * mask_attend
         for layer in self.encoder_layers:
-            h_V, h_E = torch.utils.checkpoint.checkpoint(layer, h_V, h_E, E_idx, mask, mask_attend)
+            h_V, h_E = torch.utils.checkpoint.checkpoint(layer, h_V, h_E,
+                    E_idx, mask, mask_attend, use_reentrant=False)
 
         # Concatenate sequence embeddings for autoregressive decoder
         h_S = self.W_s(S)
@@ -658,7 +659,8 @@ class ProteinMPNN(nn.Module):
         for layer in self.decoder_layers:
             h_ESV = cat_neighbors_nodes(h_V, h_ES, E_idx)
             h_ESV = mask_bw * h_ESV + h_EXV_encoder_fw
-            h_V = torch.utils.checkpoint.checkpoint(layer, h_V, h_ESV, mask)
+            h_V = torch.utils.checkpoint.checkpoint(layer, h_V, h_ESV, mask,
+                    use_reentrant=False)
 
         logits = self.W_out(h_V)
         log_probs = F.log_softmax(logits, dim=-1)

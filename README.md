@@ -11,7 +11,7 @@ We provide
 ## Repository overview
 
 * `run_stabddg.py` using StaB-ddG for binding ddG prediction
-* `megascale_finetune.py` fine-tuning ProteinMPNN on folding stability data
+* `stability_finetune.py` fine-tuning ProteinMPNN on folding stability data
 * `skempi_finetune.py` fine-tuning StaB-ddG on binding data from SKEMPI
 * `skempi_eval.py` evaluating StaB-ddG on SKEMPI test split
 * `stabddg/`
@@ -21,10 +21,10 @@ We provide
     * `utils.py` contains utility functions to handle pdb files.
 * `model_ckpts` we provide the following checkpoints
     * `proteinmpnn.pt` soluble ProteinMPNN weights `v_48_020.pt` from https://github.com/dauparas/ProteinMPNN
-    * `megascale_finetuned.pt` model weights after megascale fine-tuning
+    * `stability_finetuned.pt` model weights after stability fine-tuning
     * `stabddg.pt` final model fine-tuned on both stability and binding data. This is the checkpoint that should be used for inference.
 * `data/`
-    * `rocklin/mega_splits.pkl` megascale dataset splits from https://github.com/Kuhlman-Lab/ThermoMPNN
+    * `rocklin/mega_splits.pkl` megascale stability dataset splits from https://github.com/Kuhlman-Lab/ThermoMPNN
     * `SKEMPI/`
         * `skempi_v2.csv` unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index
         * `quality_filtering.ipynb` and `skempi_splits.ipynb` filtering and splitting script corresponding to the method described in the paper.
@@ -76,19 +76,18 @@ python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs \
 By default, the output will be saved in the same directory as the mutant csv file, with similar intermediate outputs saved in `--pdb_dir` as in the one mutant case.
 
 ## Training and evaluation
-The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
-### Fine-tuning on Megascale
-The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
-
+The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale protein folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
+### Fine-tuning on Megascale stability
+The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`.
 ```
-python megascale_finetune.py --run_name RUN_NAME \
-    --megascale DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
+python stability_finetune.py --run_name RUN_NAME \
+    --stability_data DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
     --pdb_dir DIR/AlphaFold_model_PDBs \
-    --use_antithetic_variates \
     --num_epochs 70 --checkpoint model_ckpts/proteinmpnn.pt
 ```
+The above scr
 
-The model checkpoints will be saved in `cache/megascale_finetuned` by default.
+The model checkpoints will be saved in `cache/stability_finetuned` by default.
 
 ### Fine-tuning on SKEMPI
 A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `stabddg/utils.py`. 
@@ -96,7 +95,7 @@ A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi
 python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
     --epochs 200 --lr 1e-6 \
     --run_name RUN_NAME --single_batch_train \
-    --checkpoint model_ckpts/megascale_finetuned.pt \
+    --checkpoint model_ckpts/stability_finetuned.pt \
     --skempi_pdb_dir data/SKEMPI_v2/PDBs \
     --skempi_path data/SKEMPI/filtered_skempi.csv
 ```
