@@ -77,9 +77,19 @@ By default, the output will be saved in the same directory as the mutant csv fil
 
 ## Training and evaluation
 The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
-### Fine-tuning on Megascale
-The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`. 
 
+### Fine-tuning on Megascale protein folding stability data
+First download the data from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`.   This takes several minutes.
+```
+data_dir=<destination_for_files>
+cd data_dir
+wget https://zenodo.org/records/7992926/files/AlphaFold_model_PDBs.zip 
+wget https://zenodo.org/records/7992926/files/Processed_K50_dG_datasets.zip 
+unzip AlphaFold_model_PDBs.zip 
+unzip Processed_K50_dG_datasets.zip 
+```
+
+Then from the repo directory, launch stabiity finetuning as
 ```
 python megascale_finetune.py --run_name RUN_NAME \
     --megascale DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
