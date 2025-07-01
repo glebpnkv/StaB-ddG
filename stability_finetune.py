@@ -122,7 +122,7 @@ def finetune(model, dataset_train, dataset_valid, dataset_test, ddG_data, args, 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    argparser.add_argument("--run_name", type=str, default="finetune")
+    argparser.add_argument("--run_name", type=str, default="stability_finetune")
     argparser.add_argument("--checkpoint", type=str, default="model_ckpts/proteinmpnn.pt")
     argparser.add_argument("--seed", type=int, default=0)
     argparser.add_argument("--num_epochs", type=int, default=70)
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     dataset_3 = df_2[df_2['ddG_ML']!='-']
     dataset_3_noindel = dataset_3.loc[~dataset_3.mut_type.str.contains("ins") & ~dataset_3.mut_type.str.contains("del"), :].reset_index(drop=True)
 
-    for name in tqdm(train_names + val_names + test_names):
+    for name in train_names + val_names + test_names:
         cleaned_name = name.split('.pdb', 1)[0] + '.pdb'
         cleaned_name = cleaned_name.replace("|", ':')
         ddG_data[cleaned_name] = dataset_3_noindel[(dataset_3_noindel['WT_name'] == name) & (dataset_3_noindel['mut_type'] != 'wt')]

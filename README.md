@@ -1,37 +1,11 @@
 ## StaB-ddG: Predicting mutational effects on protein binding from folding energy
 
-StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper][https://icml.cc/virtual/2025/poster/45926]. 
+StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper](https://icml.cc/virtual/2025/poster/45926). 
 
 We provide
 * [Installation instructions](#setup) 
 * [An example demonstrating how to make predictions](#predicting-binding-ddg), and
 * [Training and inference code to reproduce the results of our paper](#training-and-evaluation).
-
-
-## Repository overview
-
-* `run_stabddg.py` using StaB-ddG for binding ddG prediction
-* `stability_finetune.py` fine-tuning ProteinMPNN on folding stability data
-* `skempi_finetune.py` fine-tuning StaB-ddG on binding data from SKEMPI
-* `skempi_eval.py` evaluating StaB-ddG on SKEMPI test split
-* `stabddg/`
-    * `model.py` StaB-ddG model
-    * `ppi_dataset.py` dataset classes for binding data
-    * `mpnn_utils.py` code copied with modification from [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/training/model_utils.py). Added `fix_order` and `fix_backbone_noise` flags in `ProteinMPNN.forward()` which correspond to the usage of the antithetic variates method described in the paper when set to true.
-    * `utils.py` contains utility functions to handle pdb files.
-* `model_ckpts` we provide the following checkpoints
-    * `proteinmpnn.pt` soluble ProteinMPNN weights `v_48_020.pt` from https://github.com/dauparas/ProteinMPNN
-    * `stability_finetuned.pt` model weights after stability fine-tuning
-    * `stabddg.pt` final model fine-tuned on both stability and binding data. This is the checkpoint that should be used for inference.
-* `data/`
-    * `rocklin/mega_splits.pkl` megascale stability dataset splits from https://github.com/Kuhlman-Lab/ThermoMPNN
-    * `SKEMPI/`
-        * `skempi_v2.csv` unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index
-        * `quality_filtering.ipynb` and `skempi_splits.ipynb` filtering and splitting script corresponding to the method described in the paper.
-        * `filtered_skempi.csv` the output of `quality_filtering.ipynb` containing a subset of the rows in `skempi_v2.csv`.  An additional column indicates the cluster assignment associated the train/test split.
-        * `train_pdb.pkl, train_clusters.pkl` training split
-        * `test_pdb.pkl, test_clusters.pkl` test split
-
 
 ## Setup
 We use conda to manage required dependencies. The are few required packages (see `environment.yaml`); alternatively to creating a new environment, you can run StaB-ddG with an existing environment with PyTorch, after `pip install tqdm scipy wandb pandas`.
@@ -64,6 +38,14 @@ This will create a directory `1AO7/` with the following files:
 * `1AO7_ABC_DE_cache.pkl` cache of intermediate output
 * `input.csv` intermediate input file
 
+#### Model checkpoints
+We provide the following checkpoints. The final checkpoint, `stabddg.pt`, should be used for inference.
+```
+./model_ckpts/
+├── proteinmpnn.pt # soluble ProteinMPNN weights (v_48_020.pt) from https://github.com/dauparas/ProteinMPNN
+├── stability_finetuned.pt # model weights after stability fine-tuning
+├── stabddg.pt # final model fine-tuned on both stability and binding data.
+```
 
 ### Predicting $\Delta \Delta G$ for a list of mutants
 A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `mutation`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains without the `.pdb` suffix (e.g. `1AO7_ABC_DE`). The `mutation` column contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
@@ -77,15 +59,25 @@ By default, the output will be saved in the same directory as the mutant csv fil
 
 ## Training and evaluation
 The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale protein folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
-### Fine-tuning on Megascale stability
-The Megascale stability dataset can be downloaded from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`.
+
+### Fine-tuning on Megascale protein folding stability data
+First download the data from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`.   This takes several minutes.
 ```
-python stability_finetune.py --run_name RUN_NAME \
-    --stability_data DIR/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
-    --pdb_dir DIR/AlphaFold_model_PDBs \
-    --num_epochs 70 --checkpoint model_ckpts/proteinmpnn.pt
+data_dir=<destination_for_files>
+cd data_dir
+wget https://zenodo.org/records/7992926/files/AlphaFold_model_PDBs.zip 
+wget https://zenodo.org/records/7992926/files/Processed_K50_dG_datasets.zip 
+unzip AlphaFold_model_PDBs.zip 
+unzip Processed_K50_dG_datasets.zip 
 ```
-The above scr
+
+Then from the repo directory, launch stabiity finetuning as
+```
+python stability_finetune.py \
+    --stability_data $data_dir/Processed_K50_dG_datasets/Tsuboyama2023_Dataset2_Dataset3_20230416.csv \
+    --pdb_dir $data_dir/AlphaFold_model_PDBs
+```
+The above script requires torch to access a single gpu with `torch.device='cuda'`.
 
 The model checkpoints will be saved in `cache/stability_finetuned` by default.
 
@@ -101,6 +93,20 @@ python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
 ```
 The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 
+#### Train/test splits
+For training and evaluation with these data involves several files that we provide in `./data/SKEMPI/`:
+```
+./data/SKEMPI/
+├── skempi_v2.csv # unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index
+├── quality_filtering.ipynb # filtering script corresponding to the criteria described in our paper
+├── skempi_splits.ipynb # splitting script corresponding to the interface-homology cluster splitting described in our paper
+├── filtered_skempi.csv # the output of quality_filtering.ipynb (containing a subset of the rows in `skempi_v2.csv`).  An additional column indicates the cluster assignment associated the train/test split.
+├── test_clusters.(pkl/txt) # test split
+├── test_pdb.pkl # test split pdbs
+├── train_clusters.(pkl/txt) # train split
+├── train_pdb.pkl # train split pdbs
+```
+
 ### Running evaluation on SKEMPI
 To reproduce results from the paper, run the following command.
 ```
@@ -114,6 +120,6 @@ python skempi_eval.py --run_name EVAL \
 ```
 
 ## Acknowledgements
-* Code built upon [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/blob/main/protein_mpnn_utils.py) and [Graph-Based Protein Design](https://github.com/jingraham/neurips19-graph-protein-design)
-* Folding stability data collected by [Tsuboyama et al.](https://www.nature.com/articles/s41586-023-06328-6), and with train/test splits by [Dieckhaus et al.](https://github.com/Kuhlman-Lab/ThermoMPNN)
+* Code built upon [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/blob/main/protein_mpnn_utils.py) and [Graph-Based Protein Design](https://github.com/jingraham/neurips19-graph-protein-design), specifically [./stabddb/mpnn_utils.py](https://github.com/dauparas/ProteinMPNN/training/model_utils.py). 
+* Folding stability data collected by [Tsuboyama et al.](https://www.nature.com/articles/s41586-023-06328-6). And train/test splits by Dieckhaus et al., specifically [`rocklin/mega_splits.pkl`](https://github.com/Kuhlman-Lab/ThermoMPNN/blob/main/dataset_splits/mega_splits.pkl)(https://github.com/Kuhlman-Lab/ThermoMPNN)
 * Binding energy data curated from SKEMPIV2 by [Jankauskaite et al.](https://academic.oup.com/bioinformatics/article/35/3/462/5055583)

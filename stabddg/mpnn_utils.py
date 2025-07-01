@@ -1,4 +1,7 @@
-### Copied with modification from ProteinMPNN training/model_utils.py
+### Copied with modification from ProteinMPNN training/model_utils.py.
+# Specifically, we add `fix_order` and `fix_backbone_noise` flags to 
+# `ProteinMPNN.forward()`.  These flags correspond to the usage of the 
+# antithetic variates method described in the paper when set to true.
 
 # MIT License
 
