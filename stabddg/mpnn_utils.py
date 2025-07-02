@@ -529,12 +529,12 @@ class ProteinFeatures(nn.Module):
         return RBF_A_B
 
     def forward(self, X, mask, residue_idx, chain_labels, backbone_noise=None):
-        if self.training and self.augment_eps > 0:
-            if not backbone_noise is None:
-                X = X + backbone_noise
-            else:
-                # randomly sample backbone noise
-                X = X + self.augment_eps * torch.randn_like(X)
+        # if self.training and self.augment_eps > 0:
+        if not backbone_noise is None:
+            X = X + backbone_noise
+        else:
+            # randomly sample backbone noise
+            X = X + self.augment_eps * torch.randn_like(X)
         
         b = X[:,:,1,:] - X[:,:,0,:]
         c = X[:,:,2,:] - X[:,:,1,:]
