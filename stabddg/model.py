@@ -3,7 +3,7 @@ from torch import nn
 from .mpnn_utils import featurize
 
 class StaBddG(nn.Module):
-    def __init__(self, pmpnn, use_antithetic_variates=False, device='cuda'):
+    def __init__(self, pmpnn, use_antithetic_variates=True, device='cuda'):
         super(StaBddG, self).__init__()
         self.pmpnn = pmpnn
         self.use_antithetic_variates = use_antithetic_variates

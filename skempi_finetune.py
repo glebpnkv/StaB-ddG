@@ -21,7 +21,7 @@ def val_epoch(model, val_dataset, loss_fn, trials=3,
     overall_pr=[]
     val_loss=0
     for _ in range(trials):
-        for sample in tqdm(val_dataset):  
+        for sample in val_dataset:  
             complex, binder1, binder2 = sample['complex'], sample['binder1'], sample['binder2']
             complex_mut_seqs = sample['complex_mut_seqs']
             binder1_mut_seqs = sample['binder1_mut_seqs']
@@ -80,13 +80,13 @@ def finetune(model, train_dataset, val_dataset, args, lr=1e-5, batch_size=10000,
     ddG_loss_fn = torch.nn.MSELoss()
     # ddG_loss_fn = torch.nn.L1Loss()
 
-    for epoch in tqdm(range(n_epochs)):
+    for epoch in tqdm(range(n_epochs), desc='Epoch'):
         model.train()
         train_sum = 0
         avg_spearman = 0
         avg_rmse = 0
         train_samples = 0
-        for sample in tqdm(train_dataset):
+        for sample in train_dataset:
             try:
                 complex, binder1, binder2 = sample['complex'], sample['binder1'], sample['binder2']
                 complex_mut_seqs = sample['complex_mut_seqs']
@@ -117,9 +117,6 @@ def finetune(model, train_dataset, val_dataset, args, lr=1e-5, batch_size=10000,
                     complex_loss_sum.append(ddG_loss.item())
                     binding_ddG_pred.append(batch_binding_ddG_pred.cpu().detach())
                     train_samples += B
-
-                    if args.single_batch_train:
-                        break
 
                 if len(binding_ddG_pred) > 1:
                     binding_ddG_pred = torch.cat(binding_ddG_pred)
@@ -193,15 +190,13 @@ if __name__ == "__main__":
     argparser.add_argument("--yeast_pdb_dir", type=str, default="")
     argparser.add_argument("--yeast_pdb_cache_path", type=str, default="")
     argparser.add_argument("--yeast_only", action='store_true')
-    argparser.add_argument("--single_batch_train", action='store_true')
     argparser.add_argument("--val_split_path", type=str, default="")
     argparser.add_argument("--model_save_freq", type=int, default=10)
-    argparser.add_argument("--epochs", type=int, default=1000)
-    argparser.add_argument("--lr", type=float, default=1e-5)
+    argparser.add_argument("--epochs", type=int, default=200)
+    argparser.add_argument("--lr", type=float, default=1e-6)
     argparser.add_argument("--train_val_freq", type=int, default=-1)
     argparser.add_argument("--val_trials", type=int, default=5)
     argparser.add_argument("--val_ensembles", type=int, default=5)
-    # argparser.add_argument("--use_antithetic_variates", action='store_true')
     argparser.add_argument("--decode_mut_last", action='store_true')
     argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
@@ -246,7 +241,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, scale_binder=args.scale_binder, use_antithetic_variates=True)
+    model = StaBddG(pmpnn=pmpnn)
     model.to(device)
 
     if args.wandb:

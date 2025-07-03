@@ -64,7 +64,7 @@ The two fine-tuning sections map onto the two fine-tuning steps described in the
 First download the data from https://zenodo.org/records/7992926. Specifically, the files needed are `Tsuboyama2023_Dataset2_Dataset3_20230416.csv` and `AlphaFold_model_PDBs.zip`.   This takes several minutes.
 ```
 data_dir=<destination_for_files>
-cd data_dir
+cd $data_dir
 wget https://zenodo.org/records/7992926/files/AlphaFold_model_PDBs.zip 
 wget https://zenodo.org/records/7992926/files/Processed_K50_dG_datasets.zip 
 unzip AlphaFold_model_PDBs.zip 
@@ -81,20 +81,26 @@ The above script requires torch to access a single gpu with `torch.device='cuda'
 
 The model checkpoints will be saved in `cache/stability_finetuned` by default.
 
-### Fine-tuning on SKEMPI
-A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index. After the download, the files should be split into individual chains using `stabddg/utils.py`. 
+### Fine-tuning on SKEMPI binding energy data
+A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index.
+```
+cd $data_dir
+wget  https://life.bsc.es/pid/skempi2/database/download/SKEMPI2_PDBs.tgz 
+tar -xvzf SKEMPI2_PDBs.tgz # Data now in $data_dir/PDBs/
+```
+
+After the download, finetune from the repo directory.
 ```
 python skempi_finetune.py --train_split_path data/SKEMPI/train_pdb.pkl \
-    --epochs 200 --lr 1e-6 \
-    --run_name RUN_NAME --single_batch_train \
+    --run_name RUN_NAME \
     --checkpoint model_ckpts/stability_finetuned.pt \
-    --skempi_pdb_dir data/SKEMPI_v2/PDBs \
+    --skempi_pdb_dir $data_dir/PDBs \
     --skempi_path data/SKEMPI/filtered_skempi.csv
 ```
 The model checkpoints will be saved in `cache/skempi_finetuned` by default.
 
 #### Train/test splits
-For training and evaluation with these data involves several files that we provide in `./data/SKEMPI/`:
+Training and evaluation on the SKEMPI binding energy data involves several files that we provide in `./data/SKEMPI/`.
 ```
 ./data/SKEMPI/
 ├── skempi_v2.csv # unfiltered SKEMPI csv file from https://life.bsc.es/pid/skempi2/database/index

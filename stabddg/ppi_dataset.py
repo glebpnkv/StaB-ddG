@@ -144,10 +144,8 @@ class PPIDataset(Dataset):
 
         pdb_dict = []
 
-        print('Loading structures...')
-        for path in tqdm(file_paths):
+        for path in tqdm(file_paths, desc="Reading in PDBs"):
             pdb_dict.append(parse_PDB(path)[0])
-        print('Finished loading structures...')
         
         for dict in pdb_dict:
             all_chains = []
