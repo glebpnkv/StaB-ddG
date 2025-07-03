@@ -63,7 +63,7 @@ if __name__ == "__main__":
     argparser.add_argument("--output_dir", type=str, default="")
     argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
-    argparser.add_argument("--noise_level", type=float, default=0.2, help="amount of backbone noise")
+    argparser.add_argument("--noise_level", type=float, default=0.1, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--device", type=str, default="cuda")
     
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                         num_decoder_layers=3, 
                         k_neighbors=48, 
                         dropout=0.0, 
-                        augment_eps=args.noise_level)
+                        augment_eps=0.0)
     
     mpnn_checkpoint = torch.load(args.checkpoint)
     if 'model_state_dict' in mpnn_checkpoint.keys():
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=True)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=True, noise_level=args.noise_level, device=device)
     
     model.to(device)
     model.eval()

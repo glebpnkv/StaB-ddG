@@ -3,7 +3,7 @@
 StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper](https://icml.cc/virtual/2025/poster/45926). 
 
 We provide
-* [Installation instructions](#setup) 
+* [Installation instructions](#setup),
 * [An example demonstrating how to make predictions](#predicting-binding-ddg), and
 * [Training and inference code to reproduce the results of our paper](#training-and-evaluation).
 
@@ -127,5 +127,5 @@ python skempi_eval.py --run_name EVAL \
 
 ## Acknowledgements
 * Code built upon [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/blob/main/protein_mpnn_utils.py) and [Graph-Based Protein Design](https://github.com/jingraham/neurips19-graph-protein-design), specifically [./stabddb/mpnn_utils.py](https://github.com/dauparas/ProteinMPNN/training/model_utils.py). 
-* Folding stability data collected by [Tsuboyama et al.](https://www.nature.com/articles/s41586-023-06328-6). And train/test splits by Dieckhaus et al., specifically [`rocklin/mega_splits.pkl`](https://github.com/Kuhlman-Lab/ThermoMPNN/blob/main/dataset_splits/mega_splits.pkl)(https://github.com/Kuhlman-Lab/ThermoMPNN)
+* Folding stability data collected by [Tsuboyama et al.](https://www.nature.com/articles/s41586-023-06328-6). And train/test splits by [Dieckhaus et al.](https://www.pnas.org/doi/10.1073/pnas.2314853121), specifically [`rocklin/mega_splits.pkl`](https://github.com/Kuhlman-Lab/ThermoMPNN/blob/main/dataset_splits/mega_splits.pkl)
 * Binding energy data curated from SKEMPIV2 by [Jankauskaite et al.](https://academic.oup.com/bioinformatics/article/35/3/462/5055583)

@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # Sample only one batch of mutants per domain during training.
     argparser.add_argument("--single_batch", action='store_true') 
     argparser.add_argument("--val_freq", type=int, default=10) # Train validation frequency
-    argparser.add_argument("--noise_level", type=float, default=0.2) # Backbone noise.
+    argparser.add_argument("--noise_level", type=float, default=0.1) # Backbone noise.
     argparser.add_argument("--dropout", type=float, default=0.0) # Dropout during model training. 
     # Do not permutation order between mutant and wildtype during decoding.
     argparser.add_argument("--no_antithetic_variates", action='store_true') 
@@ -231,7 +231,7 @@ if __name__ == "__main__":
                         num_decoder_layers=3, 
                         k_neighbors=48, 
                         dropout=0.0,
-                        augment_eps=args.noise_level)
+                        augment_eps=0.0)
     
     mpnn_checkpoint = torch.load(args.checkpoint)
     if 'model_state_dict' in mpnn_checkpoint.keys():
@@ -240,7 +240,8 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=not args.no_antithetic_variates)
+    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=not args.no_antithetic_variates, 
+                    noise_level=args.noise_level, device=device)
     
     model.to(device)
     model.eval()

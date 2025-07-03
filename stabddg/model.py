@@ -3,10 +3,11 @@ from torch import nn
 from .mpnn_utils import featurize
 
 class StaBddG(nn.Module):
-    def __init__(self, pmpnn, use_antithetic_variates=True, device='cuda'):
+    def __init__(self, pmpnn, use_antithetic_variates=True, noise_level=0.1, device='cuda'):
         super(StaBddG, self).__init__()
         self.pmpnn = pmpnn
         self.use_antithetic_variates = use_antithetic_variates
+        self.noise_level = noise_level
         self.device = device
 
     def get_wt_seq(self, domain):
@@ -70,9 +71,9 @@ class StaBddG(nn.Module):
         """ Generate a random decoding order with the same shape as chain_M. """
         return torch.argsort(torch.abs(torch.randn(chain_M.shape, device=self.device)))
     
-    def _get_backbone_noise(self, X, noise_level=0.1):
+    def _get_backbone_noise(self, X):
         """ Generate random backbone noise. Defaults to 0.1A. """
-        return noise_level * torch.randn_like(X, device=self.device)
+        return self.noise_level * torch.randn_like(X, device=self.device)
 
 class LinearModel(nn.Module):
     def __init__(self, num_features):
