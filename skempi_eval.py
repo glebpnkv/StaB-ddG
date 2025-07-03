@@ -67,12 +67,12 @@ def eval(model, dataset, ensemble=20, batch_size=10000):
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    argparser.add_argument("--checkpoint", type=str, default="")
+    argparser.add_argument("--checkpoint", type=str, default="./model_ckpts/stabddg.pt")
     argparser.add_argument("--run_name", type=str, default="eval")
-    argparser.add_argument("--skempi_path", type=str, default="")
+    argparser.add_argument("--skempi_path", type=str, default="data/SKEMPI/filtered_skempi.csv")
     argparser.add_argument("--skempi_pdb_dir", type=str, default="")
-    argparser.add_argument("--skempi_pdb_cache_path", type=str, default="")
-    argparser.add_argument("--skempi_split_path", type=str, default="")
+    argparser.add_argument("--skempi_pdb_cache_path", type=str, default="cache/skempi_full_mask_pdb_dict.pkl")
+    argparser.add_argument("--skempi_split_path", type=str, default="data/SKEMPI/test_pdb.pkl")
     argparser.add_argument("--yeast_path", type=str, default="")
     argparser.add_argument("--yeast_pdb_dir", type=str, default="")
     argparser.add_argument("--ensemble", type=int, default=20)
@@ -80,7 +80,6 @@ if __name__ == "__main__":
     argparser.add_argument("--output_dir", type=str, default="cache")
     argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
-    # argparser.add_argument("--no_antithetic_variates", action='store_false')
     argparser.add_argument("--noise_level", type=float, default=0.1, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
     argparser.add_argument("--device", type=str, default="cuda")
@@ -114,7 +113,7 @@ if __name__ == "__main__":
         pmpnn.load_state_dict(mpnn_checkpoint)
     print('Successfully loaded model at', args.checkpoint)
 
-    model = StaBddG(pmpnn=pmpnn, use_antithetic_variates=True, noise_level=args.noise_level, device=device)
+    model = StaBddG(pmpnn=pmpnn, noise_level=args.noise_level, device=device)
     
     model.to(device)
     model.eval()

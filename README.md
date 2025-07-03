@@ -113,16 +113,11 @@ Training and evaluation on the SKEMPI binding energy data involves several files
 ├── train_pdb.pkl # train split pdbs
 ```
 
-### Running evaluation on SKEMPI
+### Running evaluation on SKEMPI binding ddG prediction benchmark
 To reproduce results from the paper, run the following command.
 ```
-python skempi_eval.py --run_name EVAL \
-    --batch_size 10000 \
-    --checkpoint "model_ckpts/stabddg.pt" \
-    --skempi_path data/SKEMPI/filtered_skempi.csv \
-    --skempi_pdb_dir data/SKEMPI_v2/PDBs \
-    --skempi_pdb_cache_path cache/skempi_full_mask_pdb_dict.pkl \
-    --skempi_split_path "data/SKEMPI/test_pdb.pkl"
+data_dir=<location of SKEMPI2_PDBs from life.bsc.es/pid/skempi2>
+python skempi_eval.py --skempi_pdb_dir $data_dir/PDBs 
 ```
 
 ## Acknowledgements
