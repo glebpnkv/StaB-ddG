@@ -85,7 +85,7 @@ The model checkpoints will be saved in `cache/stability_finetuned` by default.
 A filtered version of the SKEMPI csv is provided in `data/SKEMPI/filtered_skempi.csv`. The PDB files can be downloaded from https://life.bsc.es/pid/skempi2/database/index.
 ```
 cd $data_dir
-wget  https://life.bsc.es/pid/skempi2/database/download/SKEMPI2_PDBs.tgz 
+wget  https://life.bsc.es/pid/skempi2/database/download/SKEMPI2_PDBs.tgz
 tar -xvzf SKEMPI2_PDBs.tgz # Data now in $data_dir/PDBs/
 ```
 
