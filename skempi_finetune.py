@@ -178,8 +178,6 @@ if __name__ == "__main__":
     argparser.add_argument("--wandb", action='store_true')
     argparser.add_argument("--checkpoint", type=str, default="cache/megascale_finetuned/early_stopping_noamopt_all_data.pt")
     argparser.add_argument("--model_save_dir", type=str, default="cache/skempi_finetuned")
-    argparser.add_argument("--scale_binder", action='store_true')
-    argparser.add_argument("--fix_monomer", action='store_true')
     argparser.add_argument("--skempi_path", type=str, default="data/SKEMPI/filtered_skempi.csv")
     argparser.add_argument("--skempi_pdb_dir", type=str, default="/home/exx/arthur/data/SKEMPI_v2/PDBs")
     argparser.add_argument("--skempi_pdb_cache_path", type=str, default="cache/skempi_full_mask_pdb_dict.pkl")
@@ -247,7 +245,7 @@ if __name__ == "__main__":
     if args.wandb:
         wandb.init(
             project="binding",
-            entity='stanford-protein',
+            entity='',
             name=args.run_name, 
         )
 
