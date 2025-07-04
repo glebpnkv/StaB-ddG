@@ -42,7 +42,7 @@ def eval(model, dataset, ensemble=20, batch_size=10000):
 
         name, mutations = sample['name'], sample['mutation_list']
         data = {
-            "Name": [name] * len(mutations),  # Repeat the name for all rows
+            "#Pdb": [name] * len(mutations),  # Repeat the name for all rows
             "Mutation": mutations,
             "ddG": ddG.cpu().detach().numpy(),
             "Prediction": binding_ddG_pred.cpu().detach().numpy()
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     combined_df = None
     with torch.no_grad():
         pred_df = eval(model, dataset, ensemble=args.ensemble, batch_size=args.batch_size)
-        combined_df = pred_df[['Name', 'Mutation', 'ddG']]
-        combined_df[f'pred_1'] = pred_df['Prediction']
+        combined_df = pred_df[['#Pdb', 'Mutation', 'ddG']]
+        combined_df[f'ddG_pred'] = pred_df['Prediction']
 
     combined_df.to_csv(os.path.join(args.output_dir, f'{args.run_name}.csv'))

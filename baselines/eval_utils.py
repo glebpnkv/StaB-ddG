@@ -2,6 +2,7 @@ import pandas as pd
 from scipy.stats import pearsonr, spearmanr
 from tqdm import tqdm
 import math
+import argparse
 
 import numpy as np
 import pandas as pd
@@ -171,3 +172,12 @@ def t_test(df1, df2, one_sided=True):
         _, rmse_pval = ttest_rel(rmse1, rmse2)
         
     return pr_pval, sp_pval, rmse_pval
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Evaluate binding ddG predictions")
+    parser.add_argument("--csv", type=str, required=True, help="Path to prediction csv")
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.csv)
+    print(compute_metrics(df))
