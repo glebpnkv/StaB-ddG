@@ -14,7 +14,7 @@ def eval(model, dataset, ensemble=20, batch_size=10000):
     val_pearson=[]
     val_rmse=[]
     pred_df=[]
-    for sample in tqdm(dataset):  
+    for sample in tqdm(dataset, desc="Interface"):  
         complex, binder1, binder2 = sample['complex'], sample['binder1'], sample['binder2']
         complex_mut_seqs = sample['complex_mut_seqs'].to(device)
         binder1_mut_seqs = sample['binder1_mut_seqs'].to(device)
@@ -78,7 +78,6 @@ if __name__ == "__main__":
     argparser.add_argument("--ensemble", type=int, default=20)
     argparser.add_argument("--yeast_pdb_cache_path", type=str, default="")
     argparser.add_argument("--output_dir", type=str, default="cache")
-    argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
     argparser.add_argument("--noise_level", type=float, default=0.1, help="amount of backbone noise")
     argparser.add_argument("--batch_size", type=int, default=10000)
@@ -120,10 +119,8 @@ if __name__ == "__main__":
 
     combined_df = None
     with torch.no_grad():
-        for i in tqdm(range(args.trials)):
-            pred_df = eval(model, dataset, ensemble=args.ensemble, batch_size=args.batch_size)
-            if i == 0:
-                combined_df = pred_df[['Name', 'Mutation', 'ddG']]
-            combined_df[f'pred_{i+1}'] = pred_df['Prediction']
+        pred_df = eval(model, dataset, ensemble=args.ensemble, batch_size=args.batch_size)
+        combined_df = pred_df[['Name', 'Mutation', 'ddG']]
+        combined_df[f'pred_1'] = pred_df['Prediction']
 
     combined_df.to_csv(os.path.join(args.output_dir, f'{args.run_name}.csv'))
