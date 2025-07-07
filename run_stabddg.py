@@ -74,7 +74,7 @@ if __name__ == "__main__":
         if not os.path.exists(args.pdb_path):
             raise FileNotFoundError(f"PDB file {args.pdb_path} does not exist.")
         pdb_file_name = os.path.splitext(os.path.basename(args.pdb_path))[0]
-        pdb_dir = os.path.join(os.path.dirname(args.pdb_path), pdb_file_name)
+        pdb_dir = os.path.join(os.path.dirname(args.pdb_path), pdb_file_name + "_output")
         if not os.path.exists(pdb_dir):
             os.makedirs(pdb_dir, exist_ok=True)
 
@@ -101,15 +101,26 @@ if __name__ == "__main__":
         pdb_cache_path = os.path.join(pdb_dir, f"{pdb_file_name}_{binder1_chains}_{binder2_chains}_cache.pkl")
         output_dir = pdb_dir
     else:
-        pdb_dir = args.pdb_dir
-        csv_path = args.csv_path
+        output_dir = args.output_dir if args.output_dir else os.path.join(os.path.dirname(args.csv_path), 'output')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+
+        pdb_dir = f"{output_dir}/pdbs"
+        if not os.path.exists(pdb_dir):
+            os.makedirs(pdb_dir, exist_ok=True)
+
+        ### copy pdbs in pdb_dir to output_dir
+        for pdb_file in os.listdir(args.pdb_dir):
+            if pdb_file.endswith('.pdb'):
+                os.system(f"cp {os.path.join(args.pdb_dir, pdb_file)} {pdb_dir}")
         pdb_cache_path = f'{pdb_dir}/structure_cache.pkl'
-        output_dir = args.output_dir if args.output_dir else os.path.dirname(csv_path)
 
         ### rename mutation column to be consistent with SKEMPI column name
-        mut_csv = pd.read_csv(csv_path)
+        mut_csv = pd.read_csv(args.csv_path)
         mut_csv['Mutation(s)_cleaned'] = mut_csv['mutation']
+        csv_path = os.path.join(output_dir, "input.csv")
         mut_csv.to_csv(csv_path, index=False)
+
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if args.device == "cuda" else torch.device("cpu")
     

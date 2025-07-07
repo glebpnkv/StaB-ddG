@@ -30,7 +30,7 @@ We provide an example that predicts the effect of the mutation `EA63Q,QD30V,KA66
 python run_stabddg.py --pdb_path examples/one_mutation/1AO7.pdb \
     --mutation EA63Q,QD30V,KA66A --chains ABC_DE
 ```
-This will create a directory `1AO7/` with the following files:
+This will create a directory `1AO7_output/` with the following files:
 * `output.csv` contains the predicted `$\Delta \Delta G$` in column `pred_1`
 * `1AO7.pdb` the wild type structure
 * `1AO7_ABC.pdb` the wild type structure with only chains `ABC`
@@ -55,7 +55,7 @@ An example is provided in `examples/list_of_mutations`. Predictions can be gener
 python run_stabddg.py --pdb_dir examples/list_of_mutations/pdbs \
     --csv_path examples/list_of_mutations/mutations.csv
 ```
-By default, the output will be saved in the same directory as the mutant csv file, with similar intermediate outputs saved in `--pdb_dir` as in the one mutant case.
+By default, this command will create an `output` directory in the same directory as the mutant csv file. The predictions are saved in `output/output.csv`. 
 
 ## Training and evaluation
 The two fine-tuning sections map onto the two fine-tuning steps described in the paper. First, we fine-tune on the Megascale protein folding stability dataset, then fine-tune on SKEMPI. The fine-tuning runs can be optionally tracked on Wandb with the flag `--wandb`. 
@@ -119,6 +119,18 @@ To reproduce results from the paper, run the following command.
 data_dir=<location of SKEMPI2_PDBs from life.bsc.es/pid/skempi2>
 python skempi_eval.py --skempi_pdb_dir $data_dir/PDBs 
 ```
+Running the evaluation script will create a csv file containing the predictions, labels, mutations, and the PDB names in `cache/eval.csv`. A notebook is provided in `baselines/read_results_skempi_test.ipynb` to parse the results and reproduce numbers reported in the paper. Along with the script to compute metrics, we also provide StaB-ddG, FoldX, and Flex ddG predictions for reproducibility.
+```
+./baselines/
+├── read_results_skempi_test.ipynb # notebook for computing metrics for prediction csv files.
+├── eval_utils.py # script containing code for computing metrics, including t tests and cluster-bootstrapping.
+├── foldx.csv # csv file containing FoldX predictions for train + test splits.
+├── flexddg.csv # csv file containing Flex ddG predictions for train + test splits.
+├── StaB-ddG.csv # csv file containing StaB-ddG predictions for the test split.
+```
+
+FoldX predictions are obtained by following the protocol outlined in [this paper](https://www.nature.com/articles/s41467-020-15981-8#Sec11), with five `RepairPDB` steps followed by `BuildModel` with `numberOfRuns` set to 10. We found that these parameters are crucial to the accuracy of FoldX. For Flex ddG, we used the scripts provided in in the [repository](https://github.com/Kortemme-Lab/flex_ddG_tutorial), and used the recommended parameters (e.g. `number_backrub_trials=35,000`), with `nstruct=10`.
+
 
 ## Acknowledgements
 * Code built upon [ProteinMPNN](https://github.com/dauparas/ProteinMPNN/blob/main/protein_mpnn_utils.py) and [Graph-Based Protein Design](https://github.com/jingraham/neurips19-graph-protein-design), specifically [./stabddb/mpnn_utils.py](https://github.com/dauparas/ProteinMPNN/training/model_utils.py). 
