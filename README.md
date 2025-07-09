@@ -1,6 +1,6 @@
 ## StaB-ddG: Predicting mutational effects on protein binding from folding energy
 
-StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper](https://icml.cc/virtual/2025/poster/45926). 
+StaB-ddG predicts mutational effects on binding interaction energies ($\Delta \Delta G$) given the 3D structure of a reference (i.e. wild type) interface.  This is a companion repository for [our paper](https://arxiv.org/abs/2507.05502). 
 
 We provide
 * [Installation instructions](#setup),
