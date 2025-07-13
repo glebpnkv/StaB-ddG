@@ -135,7 +135,7 @@ if __name__ == "__main__":
     argparser.add_argument("--val_freq", type=int, default=10) # Train validation frequency
     argparser.add_argument("--noise_level", type=float, default=0.1) # Backbone noise.
     argparser.add_argument("--dropout", type=float, default=0.0) # Dropout during model training. 
-    # Do not permutation order between mutant and wildtype during decoding.
+    # Do not fix permutation order and backbone noise between mutant and wildtype during decoding.
     argparser.add_argument("--no_antithetic_variates", action='store_true') 
     argparser.add_argument("--lam", type=float, default=0.0) # KL regularization strength.
     argparser.add_argument("--pdb_dir", type=str, default="AlphaFold_model_PDBs")

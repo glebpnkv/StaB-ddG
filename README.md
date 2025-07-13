@@ -10,8 +10,13 @@ We provide
 ## Setup
 We use conda to manage required dependencies. The are few required packages (see `environment.yaml`); alternatively to creating a new environment, you can run StaB-ddG with an existing environment with PyTorch, after `pip install tqdm scipy wandb pandas`.
 ```
+git clone git@github.com:LDeng0205/StaB-ddG.git
+cd StaB-ddG
 conda env create -f environment.yaml
 conda activate stabddg
+
+# (optionally) install stabddg as a package
+pip install -e .
 ```
 
 ## Predicting binding $\Delta \Delta G$
