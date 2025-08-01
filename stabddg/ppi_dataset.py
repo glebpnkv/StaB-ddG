@@ -48,7 +48,8 @@ class PPIDataset(Dataset):
         ### split the input pdb files into chains
         complex_names = set(ddG_df['#Pdb'].to_list())
         for pdb in complex_names:
-            pdb_base, binder1_chains, binder2_chains = pdb.split('_')
+            *pdb_base, binder1_chains, binder2_chains = pdb.split('_')
+            pdb_base = '_'.join(pdb_base)
             pdb_path = os.path.join(pdb_dir, f"{pdb_base}.pdb")
             
             if not os.path.exists(pdb_path):
