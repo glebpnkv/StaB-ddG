@@ -298,6 +298,7 @@ def featurize(batch, device):
         chain_encoding_all[i,:] = chain_encoding_pad
 
         # Convert to labels
+        all_sequence = [x if x in alphabet else 'X' for x in all_sequence]
         indices = np.asarray([alphabet.index(a) for a in all_sequence], dtype=np.int32)
         S[i, :l] = indices
 
