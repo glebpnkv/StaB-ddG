@@ -25,7 +25,7 @@ StaB-ddG requires as input PDB files and a csv file with mutations of interest, 
 ### Predicting $\Delta \Delta G$ for one mutant
 For a single ddG prediction, StaB-ddG requires a pdb file, the chains specifying the two binders, and a mutation string.
 * `--pdb_path` path to the wild type structure.
-* `--mutation` a single mutation or multiple mutations separated by commas. For example, `YH103H,QC7R` denotes a double mutant. The first character of a mutation string denotes the wild type amino acid, the second character the chain, followed by the position in the chain, and lastly the amino acid to mutate to. For example, `YH103H` denotes a mutation from Y to H at position 103 of chain H. 
+* `--mutation` a single mutation or multiple mutations separated by commas. For example, `YH103H,QC7R` denotes a double mutant. The first character of a mutation string denotes the wild type amino acid, the second character the chain, followed by the position in the chain, and lastly the amino acid to mutate to. For example, `YH103H` denotes a mutation from Y to H at position 103 of chain H. Note: we assume that the residue id of each chain starts at 1.
 * `--chains` chains specifying what interface the $\Delta \Delta G$ is computed over for a multichain complex, separated by an underscore. For example, `ABC_DE` denotes that the energy is computed between the interface of chains `ABC` and `DE`. 
 * `--mc_samples` the number of Monte Carlo samples to average over for variance reduction. This is set to 20 by default.
 
