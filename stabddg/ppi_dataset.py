@@ -195,7 +195,7 @@ class PPIDataset(Dataset):
 
                 mut_seq[mut_pos] = mut_aa
 
-            mut_seq = [x if x in self.alphabet else 'X' for x in mut_seq ]
+            mut_seq = [x if x in self.alphabet else 'X' for x in mut_seq]
             indices = np.asarray([self.alphabet.index(a) for a in mut_seq], dtype=np.int64)
             index_matrix.append(indices)
 
