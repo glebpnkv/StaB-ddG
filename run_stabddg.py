@@ -60,6 +60,7 @@ if __name__ == "__main__":
     argparser.add_argument("--chains", type=str, default="ABC_DE")
     argparser.add_argument("--pdb_dir", type=str, default="")
     argparser.add_argument("--mc_samples", type=int, default=20)
+    argparser.add_argument("--pdb_dict_cache_name", type=str, default="")
     argparser.add_argument("--output_dir", type=str, default="")
     argparser.add_argument("--trials", type=int, default=1)
     argparser.add_argument("--seed", type=int, default=0)
@@ -113,7 +114,7 @@ if __name__ == "__main__":
         for pdb_file in os.listdir(args.pdb_dir):
             if pdb_file.endswith('.pdb'):
                 os.system(f"cp {os.path.join(args.pdb_dir, pdb_file)} {pdb_dir}")
-        pdb_cache_path = f'{pdb_dir}/structure_cache.pkl'
+        pdb_cache_path = f'{pdb_dir}/{args.pdb_dict_cache_name}' if args.pdb_dict_cache_name else ''
 
         ### rename mutation column to be consistent with SKEMPI column name
         mut_csv = pd.read_csv(args.csv_path)

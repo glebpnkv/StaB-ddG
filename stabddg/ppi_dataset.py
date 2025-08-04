@@ -155,13 +155,14 @@ class PPIDataset(Dataset):
                     all_chains.append(key.split('_')[-1])
             dict['masked_list'] = all_chains
             dict['visible_list'] = []
+        
+        if pdb_dict_cache_path != '':
+            cache_dir  = os.path.dirname(pdb_dict_cache_path) 
+            if cache_dir and not os.path.exists(cache_dir):
+                os.makedirs(cache_dir, exist_ok=True)
 
-        cache_dir  = os.path.dirname(pdb_dict_cache_path) 
-        if cache_dir and not os.path.exists(cache_dir):
-            os.makedirs(cache_dir, exist_ok=True)
-
-        with open(pdb_dict_cache_path, 'wb') as f:
-            pickle.dump(pdb_dict, f)
+            with open(pdb_dict_cache_path, 'wb') as f:
+                pickle.dump(pdb_dict, f)
         
         return pdb_dict
 

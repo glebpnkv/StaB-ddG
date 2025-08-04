@@ -102,7 +102,7 @@ if __name__ == "__main__":
                         num_encoder_layers=3, 
                         num_decoder_layers=3, 
                         k_neighbors=48, 
-                        dropout=0.0, 
+                        dropout=0.0,
                         augment_eps=0.0)
     
     mpnn_checkpoint = torch.load(args.checkpoint)

@@ -53,7 +53,7 @@ We provide the following checkpoints. The final checkpoint, `stabddg.pt`, should
 ```
 
 ### Predicting $\Delta \Delta G$ for a list of mutants
-A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `mutation`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains of the two binders without the `.pdb` suffix (e.g. `1AO7_ABC_DE`). The `mutation` column contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
+A list of mutations across different complexes can be provided in the form of a mutation csv file (`--csv_path`). The mutation csv file should contain two columns, `#Pdb` and `mutation`. The `#Pdb` column should contain the name of the complex PDB file concatenated with an underscore and the chains of the two binders without the `.pdb` suffix (e.g. `1AO7_ABC_DE` corresponding to the interface between chains `ABC` and `DE` for `1AO7.pdb`). The `mutation` column contains the mutations of interest with the same format as described above. In addition, a `--pdb_dir` should be specified that contains the wild type structures of the mutations of interest.
 #### Example
 An example is provided in `examples/list_of_mutations`. Predictions can be generated using the following command:
 ```
