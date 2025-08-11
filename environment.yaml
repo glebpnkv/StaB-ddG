@@ -5,10 +5,10 @@ dependencies:
   - python=3.10
   - pip
   - pip:
+    - biopython==1.85
+    - pandas==2.3.0
+    - scikit-learn==1.7.0
+    - scipy==1.15.3
     - torch==2.6.0
     - tqdm==4.67.1
     - wandb==0.20.1
-    - scipy==1.15.3
-    - pandas==2.3.0
-    - biopython==1.85
-    - scikit-learn==1.7.0
