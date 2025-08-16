@@ -92,7 +92,7 @@ def finetune(
                 batch_size // mut_seqs.shape[1]
             )  # convert number of tokens to number of sequences per batch
 
-            # random shuffling
+            # Random shuffling
             permutation = torch.randperm(ddG.shape[0])
             ddG = ddG[permutation]
             mut_seqs = mut_seqs[permutation]
@@ -248,37 +248,38 @@ if __name__ == "__main__":
     ALPHABET = "ACDEFGHIKLMNPQRSTVWYX"
     ddG_data = {}
 
-    df_2 = pd.read_csv(args.stability_data, low_memory=False)
-    dataset_3 = df_2[df_2["ddG_ML"] != "-"]
-    dataset_3_noindel = dataset_3.loc[
-        ~dataset_3.mut_type.str.contains("ins")
-        & ~dataset_3.mut_type.str.contains("del"),
+    # Reading stability dataset
+    df_stability_raw = pd.read_csv(args.stability_data, low_memory=False)
+    df_stability = df_stability_raw[df_stability_raw["ddG_ML"] != "-"]
+    df_stability = df_stability.loc[
+        ~df_stability.mut_type.str.contains("ins")
+        & ~df_stability.mut_type.str.contains("del"),
         :,
     ].reset_index(drop=True)
 
     for name in train_names + val_names + test_names:
         cleaned_name = name.split(".pdb", 1)[0] + ".pdb"
         cleaned_name = cleaned_name.replace("|", ":")
-        ddG_data[cleaned_name] = dataset_3_noindel[
-            (dataset_3_noindel["WT_name"] == name)
-            & (dataset_3_noindel["mut_type"] != "wt")
+        ddG_data[cleaned_name] = df_stability[
+            (df_stability["WT_name"] == name)
+            & (df_stability["mut_type"] != "wt")
         ]
 
-    for name, mut_df in ddG_data.items():
+    for name, df_mut in ddG_data.items():
         ddG_data[name] = {
-            "mut_seqs": mut_df["aa_seq"].to_list(),
-            "ddG": mut_df["ddG_ML"].to_numpy(dtype=np.float32),
+            "mut_seqs": df_mut["aa_seq"].to_list(),
+            "ddG": df_mut["ddG_ML"].to_numpy(dtype=np.float32),
         }
 
     # Featurize mutations as sequences
-    for name, mut_df in ddG_data.items():
+    for name, df_mut in ddG_data.items():
         index_matrix = []
-        for s in mut_df["mut_seqs"]:
+        for s in df_mut["mut_seqs"]:
             indices = np.asarray([ALPHABET.index(a) for a in s], dtype=np.int64)
             index_matrix.append(indices)
         index_matrix = np.vstack(index_matrix)
         ddG_data[name]["mut_seqs"] = torch.from_numpy(index_matrix)
-        ddG_data[name]["ddG"] = torch.tensor(mut_df["ddG"])
+        ddG_data[name]["ddG"] = torch.tensor(df_mut["ddG"])
 
     # Mask all input chains
     for dict in pdb_dict_train:
@@ -324,7 +325,6 @@ if __name__ == "__main__":
     )
 
     model.to(device)
-    model.eval()
 
     # Initialize wandb logging
     if args.wandb:
@@ -334,7 +334,7 @@ if __name__ == "__main__":
             entity="",
             name=args.run_name,
         )
-        print("Weights and biases intialized.")
+        print("Weights and biases initialized.")
 
     finetune(
         model,
